@@ -9,7 +9,6 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173', 
-    'https://your-vercel-app-url.vercel.app' // We will change this later!
     'https://wf-finance-app.vercel.app' // <-- Add this exact URL!
   ],
   credentials: true
