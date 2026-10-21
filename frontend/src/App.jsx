@@ -8,7 +8,7 @@ import Profile from './Profile';
 import Settings from './Settings'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
-import LandingPage from './LandingPage'; // <-- Import the Landing Page!
+import LandingPage from './LandingPage';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -17,14 +17,15 @@ function App() {
   });
   
   const [currentView, setCurrentView] = useState('dashboard'); 
-  
-  // NEW: This state controls whether we are looking at the Landing Page or the Login Screen
   const [showAuth, setShowAuth] = useState(false);
+  
+  // NEW: State for mobile sidebar toggle
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('wfUser');
     setUser(null);
-    setShowAuth(false); // Go back to the landing page on logout
+    setShowAuth(false);
   };
 
   const getPageTitle = () => {
@@ -36,21 +37,28 @@ function App() {
     return 'Dashboard';
   };
 
-  // 1. If user is logged in, show the Dashboard app
   if (user) {
     return (
-      <div className="flex h-screen w-full bg-slate-950 overflow-hidden">
+      <div className="flex h-screen w-full bg-slate-950 overflow-hidden relative">
+        {/* Pass mobile state to Sidebar */}
         <Sidebar 
           setUser={handleLogout} 
           setCurrentView={setCurrentView} 
           currentView={currentView}
           user={user}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
         
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-          <Header title={getPageTitle()} userName={user.name} />
+        <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
+          {/* Pass mobile state to Header */}
+          <Header 
+            title={getPageTitle()} 
+            userName={user.name} 
+            toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          />
           
-          <div className="flex-1 overflow-y-auto bg-slate-950">
+          <div className="flex-1 overflow-y-auto bg-slate-950 p-4 md:p-0">
             {currentView === 'transfer' ? (
               <Transfer user={user} setUser={setUser} />
             ) : currentView === 'admin' ? (
@@ -70,24 +78,21 @@ function App() {
     );
   }
 
-  // 2. If user is NOT logged in, check if they clicked "Login" yet
-if (!showAuth) {
-  return (
-    <LandingPage 
-      onLogin={() => setShowAuth(true)} 
-      onRegister={() => setShowAuth(true)} 
-    />
-  );
-}
+  if (!showAuth) {
+    return (
+      <LandingPage 
+        onLogin={() => setShowAuth(true)} 
+        onRegister={() => setShowAuth(true)} 
+      />
+    );
+  }
 
-  // 3. If they clicked Login/Enrol, show the Auth screen
   return (
     <div>
       <Login setUser={setUser} />
-      {/* A small back button just in case they change their mind */}
       <button 
         onClick={() => setShowAuth(false)} 
-        className="fixed top-4 left-4 text-slate-400 hover:text-white flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg backdrop-blur-sm"
+        className="fixed top-4 left-4 text-slate-400 hover:text-white flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg backdrop-blur-sm z-50"
       >
         ← Back to Home
       </button>
