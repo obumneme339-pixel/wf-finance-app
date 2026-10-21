@@ -35,9 +35,9 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
     e.preventDefault();
     setError('');
 
-    // Demo activation code
-    if (otp !== '123456') {
-      setError("Invalid Activation Code. Please contact customer service.");
+    // The real activation code is 82231
+    if (otp !== '82231') {
+      setError("Invalid Activation Code. Please contact customer support.");
       return;
     }
 
@@ -74,7 +74,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
   };
 
   const handleWithdraw = () => {
-    // Reset form and go back to dashboard
     setAmount('');
     setIban('');
     setSwift('');
@@ -200,7 +199,7 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
             </div>
             <h3 className="text-xl font-bold mb-2">Bank Authorization</h3>
             <p className="text-sm text-slate-400 mb-6">
-              Enter your 6-digit activation code to authorize the wire transfer of <span className="text-white font-bold">${amount}</span>.
+              Enter your activation code to authorize the wire transfer of <span className="text-white font-bold">${amount}</span>.
             </p>
           </div>
 
@@ -210,17 +209,16 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl p-4 text-center text-2xl font-mono tracking-[1em] focus:outline-none focus:border-emerald-500"
-              placeholder="000000"
+              placeholder="••••••"
               required
             />
           </div>
 
-          {/* INSTRUCTION TEXT */}
+          {/* INSTRUCTION TEXT - NO HINTS */}
           <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex items-start gap-3">
             <PhoneCall className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-slate-300 leading-relaxed">
-              Contact the bank customer service for an activation code. 
-              <span className="block mt-1 text-slate-500 italic">(Demo Hint: Use 123456)</span>
+              Please contact the bank customer support to receive your activation code and complete this transfer.
             </p>
           </div>
 
