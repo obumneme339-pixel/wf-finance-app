@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Send, ShieldCheck, Activity, ArrowUpRight, ArrowDownLeft, Plus, History, CreditCard } from 'lucide-react';
+import { Eye, EyeOff, Send, ShieldCheck, Activity, ArrowUpRight, ArrowDownLeft, Plus, History, CreditCard, HelpCircle, Globe, User, BarChart3, Clock } from 'lucide-react';
 
 function Dashboard({ user, setUser, setCurrentView }) {
   const [transactions, setTransactions] = useState([]);
@@ -29,8 +29,11 @@ function Dashboard({ user, setUser, setCurrentView }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
+  // Calculate total volume for statistics
+  const totalVolume = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+
   return (
-    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6 pb-20">
       
       {/* 1. THE GREEN DASHBOARD HEADER */}
       <div className="bg-gradient-to-br from-[#0f3d33] to-[#1b5e4f] p-5 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
@@ -77,19 +80,10 @@ function Dashboard({ user, setUser, setCurrentView }) {
               <p className="font-bold text-sm tracking-wider text-white">0438... <span className="text-emerald-400 text-[10px] ml-1 bg-emerald-900/50 px-1.5 py-0.5 rounded-md">Active</span></p>
             </div>
           </div>
-          
-          <div className="flex gap-2 w-full md:w-auto">
-            <button onClick={() => setCurrentView('transactions')} className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-xl text-xs font-medium transition-colors">
-              <Activity className="w-4 h-4" /> Transactions
-            </button>
-            <button onClick={() => setCurrentView('transfer')} className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-xl text-xs font-medium transition-colors">
-              <ArrowUpRight className="w-4 h-4" /> Top up
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* 2. QUICK ACTIONS GRID (4 Buttons) */}
+      {/* 2. QUICK ACTIONS GRID */}
       <div>
         <h3 className="text-xl md:text-2xl font-bold mb-1">What would you like to do today?</h3>
         <p className="text-slate-400 text-sm mb-4">Choose from our popular actions below</p>
@@ -131,50 +125,147 @@ function Dashboard({ user, setUser, setCurrentView }) {
           <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-slate-400" /> Your Cards
           </h3>
-          <button className="text-sm text-slate-400 hover:text-white transition-colors">View all</button>
+          <button className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1">View all &rsaquo;</button>
         </div>
         
-        <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-slate-800 rounded-xl">
+        <div className="flex flex-col items-center justify-center py-6 text-center border-2 border-dashed border-slate-800 rounded-xl">
           <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
             <CreditCard className="w-8 h-8 text-slate-500" />
           </div>
           <p className="text-slate-300 font-medium mb-1">No cards yet</p>
-          <p className="text-xs text-slate-500 max-w-[250px]">
+          <p className="text-xs text-slate-500 max-w-[250px] mb-4">
             You haven't applied for any virtual cards yet. Apply for a new card to get started with secure online payments.
           </p>
+          <button className="bg-[#0a2e24] hover:bg-[#0d3b2e] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Apply for Card
+          </button>
         </div>
       </div>
 
-      {/* 4. RECENT TRANSACTIONS */}
+      {/* 4. RECENT TRANSACTIONS (Table Layout) */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
-        <h3 className="text-lg md:text-xl font-semibold mb-4">Recent Transactions</h3>
-        <div className="flex flex-col gap-3">
-          {isLoading ? (
-            <p className="text-slate-400 text-sm">Loading...</p>
-          ) : transactions.length === 0 ? (
-            <p className="text-slate-400 text-sm">No recent transactions.</p>
-          ) : (
-            transactions.slice(0, 5).map((tx) => {
-              const isSender = tx.senderEmail === user.email;
-              return (
-                <div key={tx._id} className="flex items-center justify-between p-2 md:p-3 hover:bg-slate-800/50 rounded-xl transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${isSender ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                      {isSender ? <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5" /> : <ArrowDownLeft className="w-4 h-4 md:w-5 md:h-5" />}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg md:text-xl font-semibold">Recent Transactions</h3>
+          <button onClick={() => setCurrentView('transactions')} className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1">View all &rsaquo;</button>
+        </div>
+        
+        <div className="w-full text-sm">
+          <div className="grid grid-cols-3 text-slate-500 font-medium mb-3 px-2 border-b border-slate-800 pb-2">
+            <span>AMOUNT</span>
+            <span className="text-center">TYPE</span>
+            <span className="text-right">STATUS</span>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            {isLoading ? (
+              <p className="text-slate-400 text-sm">Loading...</p>
+            ) : transactions.length === 0 ? (
+              <p className="text-slate-400 text-sm">No recent transactions.</p>
+            ) : (
+              transactions.slice(0, 5).map((tx) => {
+                const isSender = tx.senderEmail === user.email;
+                return (
+                  <div key={tx._id} className="grid grid-cols-3 items-center px-2 py-2 hover:bg-slate-800/50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isSender ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {isSender ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
+                      </div>
+                      <span className="font-semibold">${tx.amount.toFixed(2)}</span>
                     </div>
-                    <div>
-                      <p className="font-medium text-sm md:text-base">{isSender ? tx.receiverEmail : tx.senderEmail}</p>
-                      <p className="text-[10px] md:text-xs text-slate-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                    <div className="text-center">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${isSender ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                        {isSender ? 'Debit' : 'Credit'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-emerald-400 text-xs font-medium bg-emerald-500/10 px-2 py-1 rounded">Processed</span>
                     </div>
                   </div>
-                  <p className={`font-bold text-sm md:text-base ${isSender ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    {isSender ? '-' : '+'}${tx.amount.toFixed(2)}
-                  </p>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* 5. ACCOUNT STATISTICS */}
+      <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
+        <h3 className="text-lg md:text-xl font-semibold mb-6">Account Statistics</h3>
+        <div className="flex flex-col gap-6">
+          
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-[#e6f4ea] flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Transaction Limit</p>
+              <p className="text-xl font-bold">$500,000.00</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-[#fef3c7] flex items-center justify-center">
+              <Clock className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Pending Transactions</p>
+              <p className="text-xl font-bold">$0.00</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-[#e6f4ea] flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Transaction Volume</p>
+              <p className="text-xl font-bold">${totalVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* 6. QUICK TRANSFER */}
+      <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
+        <h3 className="text-lg md:text-xl font-semibold mb-6">Quick Transfer</h3>
+        
+        <div className="flex flex-col gap-4">
+          <button onClick={() => setCurrentView('transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#d4f762] flex items-center justify-center">
+                <User className="w-5 h-5 text-[#0f3d33]" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-white">Local Transfer</p>
+                <p className="text-xs text-slate-400">0% Handling charges</p>
+              </div>
+            </div>
+            <span className="text-slate-500">&rsaquo;</span>
+          </button>
+
+          <button onClick={() => setCurrentView('transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-[#d4f762] flex items-center justify-center">
+                <Globe className="w-5 h-5 text-[#0f3d33]" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-white">International Transfer</p>
+                <p className="text-xs text-slate-400">Global reach, 0% fee</p>
+              </div>
+            </div>
+            <span className="text-slate-500">&rsaquo;</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 7. NEED HELP BANNER */}
+      <div className="bg-[#d4f762] rounded-2xl p-6 flex flex-col items-center text-center shadow-[0_0_20px_rgba(212,247,98,0.1)]">
+        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3">
+          <HelpCircle className="w-6 h-6 text-[#0f3d33]" />
+        </div>
+        <h3 className="text-[#0f3d33] font-bold text-lg mb-1">Need Help?</h3>
+        <p className="text-[#0f3d33]/70 text-sm">Our support team is here to assist you 24/7</p>
       </div>
       
     </div>
