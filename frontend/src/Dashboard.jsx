@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Send, ShieldCheck, Activity, ArrowUpRight, ArrowDownLeft, ArrowRightLeft } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Eye, EyeOff, Send, ShieldCheck, Activity, ArrowUpRight, ArrowDownLeft, Plus, History, CreditCard } from 'lucide-react';
 
 function Dashboard({ user, setUser, setCurrentView }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-  
-  const [usdToConvert, setUsdToConvert] = useState('');
-  const [cryptoType, setCryptoType] = useState('btc');
-  const [cryptoMessage, setCryptoMessage] = useState('');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -34,35 +29,11 @@ function Dashboard({ user, setUser, setCurrentView }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
-  const handleCryptoConvert = async (e) => {
-    e.preventDefault();
-    setCryptoMessage('');
-    try {
-      const response = await fetch(`${API_URL}/api/crypto/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, cryptoType, usdAmount: Number(usdToConvert) }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-      
-      setCryptoMessage(data.message);
-      setUsdToConvert('');
-      localStorage.setItem('wfUser', JSON.stringify(data.user));
-      setUser(data.user);
-    } catch (err) {
-      setCryptoMessage(err.message);
-    }
-  };
-
   return (
     <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6">
       
-      {/* 1. THE GREEN DASHBOARD HEADER (Mobile Optimized) */}
+      {/* 1. THE GREEN DASHBOARD HEADER */}
       <div className="bg-gradient-to-br from-[#0f3d33] to-[#1b5e4f] p-5 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
-        <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-white/5 rounded-full blur-xl"></div>
-
-        {/* Top Row: Avatar, Greeting, Time */}
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-slate-800/50 border border-emerald-500/30 flex items-center justify-center text-lg font-bold text-emerald-300">
@@ -83,7 +54,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
           </div>
         </div>
 
-        {/* Middle Row: Balance */}
         <div className="mb-6 relative z-10">
           <p className="text-emerald-200 text-sm font-medium mb-1 flex items-center gap-2">
             Available Balance
@@ -97,7 +67,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
           </h3>
         </div>
 
-        {/* Bottom Row: Account Number & Actions */}
         <div className="bg-black/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-center gap-3 relative z-10 border border-white/5">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="w-8 h-8 rounded-full bg-emerald-900/50 flex items-center justify-center">
@@ -120,29 +89,63 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* 2. WHAT WOULD YOU LIKE TO DO TODAY? (Mobile Optimized) */}
+      {/* 2. QUICK ACTIONS GRID (4 Buttons) */}
       <div>
         <h3 className="text-xl md:text-2xl font-bold mb-1">What would you like to do today?</h3>
         <p className="text-slate-400 text-sm mb-4">Choose from our popular actions below</p>
         
         <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <button onClick={() => setCurrentView('profile')} className="bg-slate-900 border border-slate-800 hover:bg-slate-800 p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-full flex items-center justify-center text-blue-400">
-              <Activity className="w-5 h-5 md:w-6 md:h-6" />
+          <button onClick={() => setCurrentView('profile')} className="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-full flex items-center justify-center shadow-sm">
+              <Activity className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
             </div>
-            <span className="font-medium text-sm md:text-base text-slate-300">Account Info</span>
+            <span className="font-bold text-sm md:text-base">Account Info</span>
           </button>
 
           <button onClick={() => setCurrentView('transfer')} className="bg-[#d4f762] hover:bg-[#c2e654] text-slate-900 p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(212,247,98,0.15)]">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white/40 rounded-full flex items-center justify-center">
               <Send className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <span className="font-bold text-sm md:text-lg">Send Money</span>
+            <span className="font-bold text-sm md:text-base">Send Money</span>
+          </button>
+
+          <button className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+              <Plus className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
+            </div>
+            <span className="font-bold text-sm md:text-base">Deposit</span>
+          </button>
+
+          <button onClick={() => setCurrentView('transactions')} className="bg-[#f3e8ff] hover:bg-[#e9d5ff] text-[#4c1d95] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+              <History className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
+            </div>
+            <span className="font-bold text-sm md:text-base">History</span>
           </button>
         </div>
       </div>
 
-      {/* 3. RECENT TRANSACTIONS (Mobile Optimized) */}
+      {/* 3. YOUR CARDS SECTION */}
+      <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-slate-400" /> Your Cards
+          </h3>
+          <button className="text-sm text-slate-400 hover:text-white transition-colors">View all</button>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-slate-800 rounded-xl">
+          <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
+            <CreditCard className="w-8 h-8 text-slate-500" />
+          </div>
+          <p className="text-slate-300 font-medium mb-1">No cards yet</p>
+          <p className="text-xs text-slate-500 max-w-[250px]">
+            You haven't applied for any virtual cards yet. Apply for a new card to get started with secure online payments.
+          </p>
+        </div>
+      </div>
+
+      {/* 4. RECENT TRANSACTIONS */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
         <h3 className="text-lg md:text-xl font-semibold mb-4">Recent Transactions</h3>
         <div className="flex flex-col gap-3">
@@ -151,7 +154,7 @@ function Dashboard({ user, setUser, setCurrentView }) {
           ) : transactions.length === 0 ? (
             <p className="text-slate-400 text-sm">No recent transactions.</p>
           ) : (
-            transactions.slice(0, 5).map((tx) => { // Show only top 5 on mobile
+            transactions.slice(0, 5).map((tx) => {
               const isSender = tx.senderEmail === user.email;
               return (
                 <div key={tx._id} className="flex items-center justify-between p-2 md:p-3 hover:bg-slate-800/50 rounded-xl transition-colors">
