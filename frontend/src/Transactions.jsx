@@ -5,15 +5,20 @@ function Transactions({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        // Make sure this line is exactly like this!
-        const response = await fetch(`http://localhost:5000/api/transaction/history/${user.email}`);
+        console.log("Fetching for:", user.email); // Debugging
+        const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
         const data = await response.json();
-
+        
+        // Ensure it's an array before setting it
         if (Array.isArray(data)) {
           setTransactions(data);
+        } else {
+          console.error("Data is not an array:", data);
         }
       } catch (err) {
         console.error("Failed to fetch transactions", err);
@@ -22,10 +27,10 @@ function Transactions({ user }) {
       }
     };
     fetchTransactions();
-  }, [user.email]);
+  }, [user.email, API_URL]);
 
   return (
-    <div className="p-8 text-white max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto">
       <div className="mb-8">
         <h2 className="text-3xl font-bold">Transaction History 🧾</h2>
         <p className="text-slate-400 mt-1">View all your past activity in one place.</p>
