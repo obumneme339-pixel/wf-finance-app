@@ -90,7 +90,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
             <span className="font-bold text-sm md:text-base">Send Money</span>
           </button>
 
-          {/* THIS BUTTON NOW ROUTES TO THE NEW DEPOSIT PAGE */}
           <button onClick={() => setCurrentView('deposit')} className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
               <Plus className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
@@ -225,7 +224,9 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
             <span className="text-slate-500">&rsaquo;</span>
           </button>
-          <button onClick={() => setCurrentView('transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
+          
+          {/* THIS BUTTON NOW ROUTES TO INTERNATIONAL TRANSFER */}
+          <button onClick={() => setCurrentView('international-transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-[#d4f762] flex items-center justify-center">
                 <Globe className="w-5 h-5 text-[#0f3d33]" />

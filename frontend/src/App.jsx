@@ -7,6 +7,7 @@ import Transactions from './Transactions';
 import Profile from './Profile';
 import Settings from './Settings'; 
 import Deposit from './Deposit'; 
+import InternationalTransfer from './InternationalTransfer'; // NEW IMPORT
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -33,7 +34,8 @@ function App() {
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
-    if (currentView === 'deposit') return 'Fund Wallet'; 
+    if (currentView === 'deposit') return 'Fund Wallet';
+    if (currentView === 'international-transfer') return 'International Transfer'; // NEW TITLE
     return 'Dashboard';
   };
 
@@ -69,6 +71,9 @@ function App() {
               <Settings user={user} setUser={setUser} />
             ) : currentView === 'deposit' ? (
               <Deposit user={user} setUser={setUser} setCurrentView={setCurrentView} />
+            ) : currentView === 'international-transfer' ? (
+              // NEW PAGE ROUTE
+              <InternationalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}
