@@ -1,40 +1,89 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Send, ShieldCheck, Activity, ArrowUpRight, ArrowDownLeft, Plus, History, CreditCard, HelpCircle, Globe, User, BarChart3, Clock } from 'lucide-react';
+import { io } from "socket.io-client"; // NEW IMPORT
 
 function Dashboard({ user, setUser, setCurrentView }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // NEW STATE FOR REAL-TIME NOTIFICATIONS
+  const [liveNotification, setLiveNotification] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+  // 1. Clock Timer
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // 2. Fetch Transactions Function
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
+      const data = await response.json();
+      if (Array.isArray(data)) setTransactions(data);
+    } catch (err) {
+      console.error("Failed to fetch transactions", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 3. Fetch on Load
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
-        const data = await response.json();
-        if (Array.isArray(data)) setTransactions(data);
-      } catch (err) {
-        console.error("Failed to fetch transactions", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchTransactions();
+  }, [user.email, API_URL]);
+
+  // 4. REAL-TIME WEBSOCKET CONNECTION
+  useEffect(() => {
+    // Connect to the backend
+    const socket = io(API_URL);
+
+    // Join the room for this specific user's email
+    socket.emit("join_room", user.email);
+
+    // Listen for balance updates from the backend
+    socket.on("balance_updated", (data) => {
+      console.log("⚡ Real-time update received:", data);
+      
+      // Instantly update the user's balance on the screen
+      const updatedUser = { ...user, balance: data.newBalance };
+      setUser(updatedUser);
+      localStorage.setItem('wfUser', JSON.stringify(updatedUser));
+
+      // Show the floating notification
+      setLiveNotification(data.message);
+      
+      // Refresh the transaction list automatically
+      fetchTransactions();
+
+      // Hide the notification after 5 seconds
+      setTimeout(() => setLiveNotification(null), 5000);
+    });
+
+    // Cleanup connection when leaving the page
+    return () => socket.disconnect();
   }, [user.email, API_URL]);
 
   const totalVolume = transactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
-    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6 pb-20">
+    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6 pb-20 relative">
       
-      {/* HEADER */}
+      {/* 🌟 REAL-TIME FLOATING NOTIFICATION TOAST 🌟 */}
+      {liveNotification && (
+        <div className="fixed top-20 right-4 bg-emerald-600 text-white px-6 py-4 rounded-xl shadow-[0_0_30px_rgba(5,150,105,0.5)] z-50 animate-bounce border border-emerald-400">
+          <p className="font-bold flex items-center gap-2 text-sm">
+            <span className="w-2 h-2 bg-white rounded-full animate-ping"></span> Real-time Update!
+          </p>
+          <p className="text-xs mt-1 text-emerald-100">{liveNotification}</p>
+        </div>
+      )}
+
+      {/* HEADER SECTION */}
       <div className="bg-gradient-to-br from-[#0f3d33] to-[#1b5e4f] p-5 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div className="flex items-center gap-3">
@@ -224,8 +273,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
             <span className="text-slate-500">&rsaquo;</span>
           </button>
-          
-          {/* THIS BUTTON NOW ROUTES TO INTERNATIONAL TRANSFER */}
           <button onClick={() => setCurrentView('international-transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-[#d4f762] flex items-center justify-center">

@@ -20,8 +20,19 @@ router.post('/transfer', async (req, res) => {
     await sender.save();
     await receiver.save();
 
-    const newTransaction = new Transaction({ senderEmail, receiverEmail, amount });
+    const newTransaction = new Transaction({ senderEmail, receiverEmail, amount, type: 'transfer' });
     await newTransaction.save();
+
+    // 🔥 REAL-TIME MAGIC: Emit updates to both users
+    const io = req.app.get('socketio');
+    io.to(receiverEmail).emit("balance_updated", { 
+      message: `You received $${amount} from ${sender.name}`, 
+      newBalance: receiver.balance 
+    });
+    io.to(senderEmail).emit("balance_updated", { 
+      message: `You sent $${amount} to ${receiver.name}`, 
+      newBalance: sender.balance 
+    });
 
     res.json({ message: `Successfully sent $${amount} to ${receiver.name}!` });
   } catch (err) {
@@ -30,21 +41,7 @@ router.post('/transfer', async (req, res) => {
   }
 });
 
-// History Route
-router.get('/history/:email', async (req, res) => {
-  try {
-    const userEmail = req.params.email;
-    const transactions = await Transaction.find({
-      $or: [{ senderEmail: userEmail }, { receiverEmail: userEmail }]
-    }).sort({ createdAt: -1 });
-    res.json(transactions);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
-});
-
-// --- DEPOSIT ROUTE ---
+// Deposit Route
 router.post('/deposit', async (req, res) => {
   try {
     const { email, amount } = req.body;
@@ -62,7 +59,28 @@ router.post('/deposit', async (req, res) => {
     });
     await newTransaction.save();
 
+    // 🔥 REAL-TIME MAGIC
+    const io = req.app.get('socketio');
+    io.to(email).emit("balance_updated", { 
+      message: `Deposit of $${amount} successful!`, 
+      newBalance: user.balance 
+    });
+
     res.json({ message: `Successfully deposited $${amount}!`, user });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// History Route
+router.get('/history/:email', async (req, res) => {
+  try {
+    const userEmail = req.params.email;
+    const transactions = await Transaction.find({
+      $or: [{ senderEmail: userEmail }, { receiverEmail: userEmail }]
+    }).sort({ createdAt: -1 });
+    res.json(transactions);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
