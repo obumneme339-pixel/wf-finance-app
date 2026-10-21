@@ -6,6 +6,7 @@ import Admin from './Admin';
 import Transactions from './Transactions'; 
 import Profile from './Profile';
 import Settings from './Settings'; 
+import Deposit from './Deposit'; // <-- NEW IMPORT
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -18,8 +19,6 @@ function App() {
   
   const [currentView, setCurrentView] = useState('dashboard'); 
   const [showAuth, setShowAuth] = useState(false);
-  
-  // NEW: State for mobile sidebar toggle
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -34,13 +33,13 @@ function App() {
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
+    if (currentView === 'deposit') return 'Fund Wallet'; // <-- NEW TITLE
     return 'Dashboard';
   };
 
   if (user) {
     return (
       <div className="flex h-screen w-full bg-slate-950 overflow-hidden relative">
-        {/* Pass mobile state to Sidebar */}
         <Sidebar 
           setUser={handleLogout} 
           setCurrentView={setCurrentView} 
@@ -51,7 +50,6 @@ function App() {
         />
         
         <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
-          {/* Pass mobile state to Header */}
           <Header 
             title={getPageTitle()} 
             userName={user.name} 
@@ -69,6 +67,9 @@ function App() {
               <Profile user={user} />
             ) : currentView === 'settings' ? (
               <Settings user={user} setUser={setUser} />
+            ) : currentView === 'deposit' ? (
+              {/* THIS IS THE NEW DEPOSIT PAGE YOU WANTED */}
+              <Deposit user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}

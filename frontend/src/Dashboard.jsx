@@ -29,38 +29,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
-  // --- WORKING DEPOSIT FUNCTION ---
-  const handleDeposit = async () => {
-    const amountStr = window.prompt("Enter amount to deposit ($):");
-    if (!amountStr) return;
-    
-    const amount = Number(amountStr);
-    if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid number");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/api/transaction/deposit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, amount }),
-      });
-      
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
-      localStorage.setItem('wfUser', JSON.stringify(data.user));
-      setUser(data.user);
-      
-      alert(data.message);
-      window.location.reload(); // Refresh to show new transaction
-      
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
   const totalVolume = transactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
@@ -122,8 +90,8 @@ function Dashboard({ user, setUser, setCurrentView }) {
             <span className="font-bold text-sm md:text-base">Send Money</span>
           </button>
 
-          {/* WORKING DEPOSIT BUTTON */}
-          <button onClick={handleDeposit} className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
+          {/* THIS BUTTON NOW ROUTES TO THE NEW DEPOSIT PAGE */}
+          <button onClick={() => setCurrentView('deposit')} className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
               <Plus className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
             </div>
