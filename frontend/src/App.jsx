@@ -6,7 +6,7 @@ import Admin from './Admin';
 import Transactions from './Transactions'; 
 import Profile from './Profile';
 import Settings from './Settings'; 
-import Deposit from './Deposit'; // <-- NEW IMPORT
+import Deposit from './Deposit'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -33,7 +33,7 @@ function App() {
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
-    if (currentView === 'deposit') return 'Fund Wallet'; // <-- NEW TITLE
+    if (currentView === 'deposit') return 'Fund Wallet'; 
     return 'Dashboard';
   };
 
@@ -68,7 +68,6 @@ function App() {
             ) : currentView === 'settings' ? (
               <Settings user={user} setUser={setUser} />
             ) : currentView === 'deposit' ? (
-              {/* THIS IS THE NEW DEPOSIT PAGE YOU WANTED */}
               <Deposit user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
