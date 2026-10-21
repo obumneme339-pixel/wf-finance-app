@@ -7,7 +7,7 @@ import Transactions from './Transactions';
 import Profile from './Profile';
 import Settings from './Settings'; 
 import Deposit from './Deposit'; 
-import InternationalTransfer from './InternationalTransfer'; // NEW IMPORT
+import InternationalTransfer from './InternationalTransfer'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -35,7 +35,7 @@ function App() {
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
     if (currentView === 'deposit') return 'Fund Wallet';
-    if (currentView === 'international-transfer') return 'International Transfer'; // NEW TITLE
+    if (currentView === 'international-transfer') return 'International Transfer';
     return 'Dashboard';
   };
 
@@ -52,9 +52,11 @@ function App() {
         />
         
         <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
+          {/* ADDED user={user} HERE FOR THE NOTIFICATIONS */}
           <Header 
             title={getPageTitle()} 
             userName={user.name} 
+            user={user} 
             toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           />
           
@@ -72,7 +74,6 @@ function App() {
             ) : currentView === 'deposit' ? (
               <Deposit user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : currentView === 'international-transfer' ? (
-              // NEW PAGE ROUTE
               <InternationalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
