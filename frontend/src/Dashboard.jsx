@@ -29,13 +29,44 @@ function Dashboard({ user, setUser, setCurrentView }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
-  // Calculate total volume for statistics
+  // --- WORKING DEPOSIT FUNCTION ---
+  const handleDeposit = async () => {
+    const amountStr = window.prompt("Enter amount to deposit ($):");
+    if (!amountStr) return;
+    
+    const amount = Number(amountStr);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid number");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/transaction/deposit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, amount }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      localStorage.setItem('wfUser', JSON.stringify(data.user));
+      setUser(data.user);
+      
+      alert(data.message);
+      window.location.reload(); // Refresh to show new transaction
+      
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const totalVolume = transactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
     <div className="p-4 md:p-8 text-white max-w-6xl mx-auto space-y-6 pb-20">
       
-      {/* 1. THE GREEN DASHBOARD HEADER */}
+      {/* HEADER */}
       <div className="bg-gradient-to-br from-[#0f3d33] to-[#1b5e4f] p-5 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div className="flex items-center gap-3">
@@ -69,21 +100,9 @@ function Dashboard({ user, setUser, setCurrentView }) {
             <span className="text-lg md:text-2xl text-emerald-200 ml-2">USD</span>
           </h3>
         </div>
-
-        <div className="bg-black/20 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-center gap-3 relative z-10 border border-white/5">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="w-8 h-8 rounded-full bg-emerald-900/50 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-[10px] text-emerald-300">Account Number</p>
-              <p className="font-bold text-sm tracking-wider text-white">0438... <span className="text-emerald-400 text-[10px] ml-1 bg-emerald-900/50 px-1.5 py-0.5 rounded-md">Active</span></p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* 2. QUICK ACTIONS GRID */}
+      {/* QUICK ACTIONS */}
       <div>
         <h3 className="text-xl md:text-2xl font-bold mb-1">What would you like to do today?</h3>
         <p className="text-slate-400 text-sm mb-4">Choose from our popular actions below</p>
@@ -103,7 +122,8 @@ function Dashboard({ user, setUser, setCurrentView }) {
             <span className="font-bold text-sm md:text-base">Send Money</span>
           </button>
 
-          <button className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
+          {/* WORKING DEPOSIT BUTTON */}
+          <button onClick={handleDeposit} className="bg-[#e6f4ea] hover:bg-[#d4ebd9] text-[#0f3d33] p-4 md:p-6 rounded-2xl flex flex-col items-center gap-3 transition-colors shadow-sm">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
               <Plus className="w-5 h-5 md:w-6 md:h-6 text-emerald-600" />
             </div>
@@ -119,13 +139,12 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* 3. YOUR CARDS SECTION */}
+      {/* YOUR CARDS SECTION */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg md:text-xl font-semibold flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-slate-400" /> Your Cards
           </h3>
-          <button className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1">View all &rsaquo;</button>
         </div>
         
         <div className="flex flex-col items-center justify-center py-6 text-center border-2 border-dashed border-slate-800 rounded-xl">
@@ -134,15 +153,15 @@ function Dashboard({ user, setUser, setCurrentView }) {
           </div>
           <p className="text-slate-300 font-medium mb-1">No cards yet</p>
           <p className="text-xs text-slate-500 max-w-[250px] mb-4">
-            You haven't applied for any virtual cards yet. Apply for a new card to get started with secure online payments.
+            You haven't applied for any virtual cards yet.
           </p>
-          <button className="bg-[#0a2e24] hover:bg-[#0d3b2e] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+          <button onClick={() => alert("Virtual card application will be available soon!")} className="bg-[#0a2e24] hover:bg-[#0d3b2e] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
             <Plus className="w-4 h-4" /> Apply for Card
           </button>
         </div>
       </div>
 
-      {/* 4. RECENT TRANSACTIONS (Table Layout) */}
+      {/* RECENT TRANSACTIONS */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg md:text-xl font-semibold">Recent Transactions</h3>
@@ -188,11 +207,10 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* 5. ACCOUNT STATISTICS */}
+      {/* ACCOUNT STATISTICS */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
         <h3 className="text-lg md:text-xl font-semibold mb-6">Account Statistics</h3>
         <div className="flex flex-col gap-6">
-          
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-[#e6f4ea] flex items-center justify-center">
               <CreditCard className="w-5 h-5 text-emerald-600" />
@@ -202,7 +220,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
               <p className="text-xl font-bold">$500,000.00</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-[#fef3c7] flex items-center justify-center">
               <Clock className="w-5 h-5 text-yellow-600" />
@@ -212,7 +229,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
               <p className="text-xl font-bold">$0.00</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-[#e6f4ea] flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-emerald-600" />
@@ -222,14 +238,12 @@ function Dashboard({ user, setUser, setCurrentView }) {
               <p className="text-xl font-bold">${totalVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
-
         </div>
       </div>
 
-      {/* 6. QUICK TRANSFER */}
+      {/* QUICK TRANSFER */}
       <div className="bg-slate-900 border border-slate-800 p-4 md:p-6 rounded-2xl">
         <h3 className="text-lg md:text-xl font-semibold mb-6">Quick Transfer</h3>
-        
         <div className="flex flex-col gap-4">
           <button onClick={() => setCurrentView('transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
             <div className="flex items-center gap-4">
@@ -243,7 +257,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
             <span className="text-slate-500">&rsaquo;</span>
           </button>
-
           <button onClick={() => setCurrentView('transfer')} className="flex items-center justify-between p-2 hover:bg-slate-800/50 rounded-xl transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-[#d4f762] flex items-center justify-center">
@@ -259,7 +272,7 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* 7. NEED HELP BANNER */}
+      {/* NEED HELP BANNER */}
       <div className="bg-[#d4f762] rounded-2xl p-6 flex flex-col items-center text-center shadow-[0_0_20px_rgba(212,247,98,0.1)]">
         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3">
           <HelpCircle className="w-6 h-6 text-[#0f3d33]" />

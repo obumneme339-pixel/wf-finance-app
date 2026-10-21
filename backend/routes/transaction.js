@@ -44,7 +44,7 @@ router.get('/history/:email', async (req, res) => {
   }
 });
 
-// --- THIS IS THE NEW DEPOSIT ROUTE ---
+// --- DEPOSIT ROUTE ---
 router.post('/deposit', async (req, res) => {
   try {
     const { email, amount } = req.body;
