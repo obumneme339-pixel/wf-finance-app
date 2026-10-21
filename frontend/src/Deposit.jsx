@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, CreditCard, ShieldCheck, CheckCircle2, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, CreditCard, ShieldCheck, CheckCircle2, Lock, Copy, Wallet } from 'lucide-react';
 
 function Deposit({ user, setUser, setCurrentView }) {
   const [amount, setAmount] = useState('');
@@ -11,13 +11,30 @@ function Deposit({ user, setUser, setCurrentView }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
+  
+  // NEW STATE FOR WEB3 CRYPTO ADDRESS
+  const [cryptoAddress, setCryptoAddress] = useState('');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+  // FETCH CRYPTO ADDRESS ON LOAD
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/wallet/address/${user.email}`);
+        const data = await response.json();
+        setCryptoAddress(data.address);
+      } catch (err) {
+        console.error("Failed to fetch address", err);
+      }
+    };
+    fetchAddress();
+  }, [user.email, API_URL]);
+
   // Format card number with spaces (e.g., 1234 5678 9012 3456)
   const handleCardNumberChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-    if (value.length > 16) value = value.slice(0, 16); // Max 16 digits
+    let value = e.target.value.replace(/\D/g, ''); 
+    if (value.length > 16) value = value.slice(0, 16); 
     const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
     setCardNumber(formatted);
   };
@@ -52,7 +69,7 @@ function Deposit({ user, setUser, setCurrentView }) {
 
     setIsProcessing(true);
 
-    // Simulate a 3-second processing delay (like a real bank authorization)
+    // Simulate a 3-second processing delay
     setTimeout(async () => {
       try {
         const response = await fetch(`${API_URL}/api/transaction/deposit`, {
@@ -75,6 +92,11 @@ function Deposit({ user, setUser, setCurrentView }) {
         setIsProcessing(false);
       }
     }, 3000);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(cryptoAddress);
+    alert("Crypto Address Copied!");
   };
 
   if (isSuccess) {
@@ -115,6 +137,36 @@ function Deposit({ user, setUser, setCurrentView }) {
         </div>
       )}
 
+      {/* --- NEW: WEB3 CRYPTO DEPOSIT SECTION --- */}
+      <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8">
+        <h3 className="text-sm font-medium flex items-center gap-2 text-white mb-2">
+          <Wallet className="w-4 h-4 text-emerald-400" /> Deposit via Crypto (USDT)
+        </h3>
+        <p className="text-xs text-slate-400 mb-4">
+          Send USDT (ERC-20) from your Crypto.com wallet to this address. Your balance will update automatically once confirmed on the blockchain.
+        </p>
+        
+        <div className="bg-slate-800 p-3 rounded-lg border border-slate-700 flex items-center justify-between gap-2">
+          <span className="font-mono text-xs text-emerald-400 break-all select-all">
+            {cryptoAddress || "Generating address..."}
+          </span>
+          <button 
+            onClick={copyToClipboard}
+            className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex-shrink-0"
+            title="Copy Address"
+          >
+            <Copy className="w-4 h-4 text-white" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4 mb-8">
+        <div className="h-px bg-slate-800 flex-1"></div>
+        <span className="text-xs text-slate-500 uppercase tracking-widest font-medium">Or Pay with Card</span>
+        <div className="h-px bg-slate-800 flex-1"></div>
+      </div>
+
+      {/* --- CARD DEPOSIT SECTION --- */}
       <form onSubmit={handleDeposit} className="space-y-6">
         
         {/* Amount Section */}
@@ -215,7 +267,7 @@ function Deposit({ user, setUser, setCurrentView }) {
         </button>
         
         <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1">
-          <ShieldCheck className="w-3 h-3 text-emerald-500" /> Payments are secured with 256-bit encryption.
+          <ShieldCheck className="w-3 h-3 text-emerald-500" /> Card payments are secured with 256-bit encryption.
         </p>
       </form>
     </div>

@@ -1,22 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const http = require('http'); // NEW
-const { Server } = require('socket.io'); // NEW
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 require('dotenv').config();
 
+// NEW IMPORT FOR CRYPTO LISTENER
+const startCryptoListener = require('./cryptoListener');
+
 const app = express();
-const server = http.createServer(app); // NEW: Wrap express app
+const server = http.createServer(app); 
 
 // Setup Socket.io
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'https://wf-finance-app.vercel.app'], // Allow frontend
+    origin: ['http://localhost:5173', 'https://wf-finance-app.vercel.app'],
     methods: ["GET", "POST", "PUT"]
   }
 });
 
-// Make 'io' accessible in our routes (like transaction.js)
+// Make 'io' accessible in our routes
 app.set('socketio', io);
 
 app.use(cors({
@@ -34,7 +37,6 @@ mongoose.connect(process.env.MONGO_URI)
 io.on("connection", (socket) => {
   console.log("🟢 A user connected:", socket.id);
   
-  // Users join a "room" named after their email
   socket.on("join_room", (email) => {
     socket.join(email);
     console.log(`User joined room: ${email}`);
@@ -52,14 +54,20 @@ app.use('/api/crypto', require('./routes/crypto'));
 app.use('/api/transaction', require('./routes/transaction'));
 app.use('/api/user', require('./routes/user'));
 
+// NEW ROUTE FOR WEB3 WALLET ADDRESS
+app.use('/api/wallet', require('./routes/cryptoWallet'));
+
 // Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong on the server!" });
 });
 
+// START THE CRYPTO LISTENER (Listening to the blockchain)
+startCryptoListener(io);
+
 // Start Server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => { // MUST use server.listen, not app.listen
+server.listen(PORT, () => { 
   console.log(`Server is running on port ${PORT}`);
 });
