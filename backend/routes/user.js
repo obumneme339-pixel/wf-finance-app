@@ -1,42 +1,50 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false, // Admin panel access
-  },
-  isBanned: {
-    type: Boolean,
-    default: false, // Account suspension
-  },
-  balance: {
-    type: Number,
-    default: 0, // Fiat USD balance
-  },
-  crypto: {
-    btc: { type: Number, default: 0 },
-    eth: { type: Number, default: 0 },
-    usdt: { type: Number, default: 0 },
-    usdc: { type: Number, default: 0 }
-  },
-  cryptoAddress: {
-    type: String,
-    unique: true,
-    sparse: true // Allows existing users to be null until they generate a Web3 wallet address
+// @route   PUT /api/user/update
+// @desc    Update user profile (name, email, password)
+router.put('/update', async (req, res) => {
+  try {
+    const { userId, name, email, newPassword } = req.body;
+
+    // 1. Find the user
+    let user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 2. Update Name and Email
+    user.name = name;
+    user.email = email;
+
+    // 3. If they typed a new password, hash it and update it
+    if (newPassword && newPassword.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    await user.save();
+
+    // 4. Send back the updated user data
+    res.json({
+      message: "Profile updated successfully! ✅",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        balance: user.balance,
+        crypto: user.crypto,
+        isAdmin: user.isAdmin
+      }
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "Email is already in use by another account." });
+    }
+    res.status(500).send("Server Error");
   }
-}, { timestamps: true });
+});
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = router;
