@@ -7,7 +7,6 @@ const Transaction = require('../models/Transaction');
 router.post('/transfer', async (req, res) => {
   try {
     const { senderEmail, receiverEmail, amount } = req.body;
-
     const sender = await User.findOne({ email: senderEmail });
     const receiver = await User.findOne({ email: receiverEmail });
 
@@ -21,11 +20,7 @@ router.post('/transfer', async (req, res) => {
     await sender.save();
     await receiver.save();
 
-    const newTransaction = new Transaction({
-      senderEmail,
-      receiverEmail,
-      amount
-    });
+    const newTransaction = new Transaction({ senderEmail, receiverEmail, amount });
     await newTransaction.save();
 
     res.json({ message: `Successfully sent $${amount} to ${receiver.name}!` });
@@ -35,7 +30,7 @@ router.post('/transfer', async (req, res) => {
   }
 });
 
-// History Route (THIS IS THE ONE CAUSING THE 404)
+// History Route
 router.get('/history/:email', async (req, res) => {
   try {
     const userEmail = req.params.email;
@@ -43,6 +38,31 @@ router.get('/history/:email', async (req, res) => {
       $or: [{ senderEmail: userEmail }, { receiverEmail: userEmail }]
     }).sort({ createdAt: -1 });
     res.json(transactions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// --- THIS IS THE NEW DEPOSIT ROUTE ---
+router.post('/deposit', async (req, res) => {
+  try {
+    const { email, amount } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.balance += amount;
+    await user.save();
+
+    const newTransaction = new Transaction({
+      senderEmail: 'Bank Deposit',
+      receiverEmail: email,
+      amount: amount,
+      type: 'deposit'
+    });
+    await newTransaction.save();
+
+    res.json({ message: `Successfully deposited $${amount}!`, user });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
