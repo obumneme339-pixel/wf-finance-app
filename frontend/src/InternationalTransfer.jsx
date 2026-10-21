@@ -8,7 +8,7 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
   const [amount, setAmount] = useState('');
   const [otp, setOtp] = useState('');
   
-  const [step, setStep] = useState(1); // 1 = Details, 2 = Security Check, 3 = Success
+  const [step, setStep] = useState(1); 
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,7 +17,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
   const handleDetailsSubmit = (e) => {
     e.preventDefault();
     setError('');
-
     const transferAmount = Number(amount);
     if (transferAmount < 100) {
       setError("Minimum international transfer is $100.");
@@ -27,7 +26,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
       setError("Insufficient funds in your account.");
       return;
     }
-
     setStep(2);
   };
 
@@ -35,7 +33,7 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
     e.preventDefault();
     setError('');
 
-    // The real activation code is 82231
+    // SECRET CODE IS 82231
     if (otp !== '82231') {
       setError("Invalid Activation Code. Please contact customer support.");
       return;
@@ -46,7 +44,7 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
     setTimeout(async () => {
       try {
         const dummyReceiverEmail = 'international@bank.com'; 
-        const response = await fetch(`${API_URL}/api/transaction/transfer`, {
+        await fetch(`${API_URL}/api/transaction/transfer`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -124,7 +122,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
         </div>
       )}
 
-      {/* STEP 1: RECIPIENT DETAILS */}
       {step === 1 && (
         <form onSubmit={handleDetailsSubmit} className="space-y-5 bg-slate-900 p-6 rounded-2xl border border-slate-800">
           <div>
@@ -189,7 +186,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
         </form>
       )}
 
-      {/* STEP 2: SECURITY CHECK & ACTIVATION CODE */}
       {step === 2 && (
         <form onSubmit={handleSecuritySubmit} className="space-y-6 bg-slate-900 p-6 rounded-2xl border border-slate-800">
           
@@ -214,7 +210,7 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
             />
           </div>
 
-          {/* INSTRUCTION TEXT - NO HINTS */}
+          {/* INSTRUCTION TEXT - NO HINTS, ONLY CUSTOMER SERVICE */}
           <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex items-start gap-3">
             <PhoneCall className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-slate-300 leading-relaxed">
@@ -230,7 +226,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
             {isProcessing ? 'Authorizing Wire...' : `Authorize $${amount}`}
           </button>
           
-          {/* WITHDRAW OPTION */}
           <div className="pt-4 border-t border-slate-800">
             <button 
               type="button"
