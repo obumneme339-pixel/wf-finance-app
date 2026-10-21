@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Globe, ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Globe, ShieldCheck, Lock, CheckCircle2, PhoneCall, ArrowDownToLine } from 'lucide-react';
 
 function InternationalTransfer({ user, setUser, setCurrentView }) {
   const [iban, setIban] = useState('');
@@ -28,7 +28,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
       return;
     }
 
-    // Move to the Security Check step
     setStep(2);
   };
 
@@ -36,20 +35,17 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
     e.preventDefault();
     setError('');
 
+    // Demo activation code
     if (otp !== '123456') {
-      setError("Invalid Authorization Code. (Hint: enter 123456 for this demo).");
+      setError("Invalid Activation Code. Please contact customer service.");
       return;
     }
 
     setIsProcessing(true);
 
-    // Simulate bank processing delay
     setTimeout(async () => {
       try {
-        // For this demo, we will send it to the backend using a dummy email as the receiver
-        // In a real app, the backend would handle IBAN and SWIFT routing
         const dummyReceiverEmail = 'international@bank.com'; 
-        
         const response = await fetch(`${API_URL}/api/transaction/transfer`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -60,12 +56,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
           }),
         });
         
-        const data = await response.json();
-        
-        // Even if the receiver doesn't exist in our DB, we still want to show success for the demo
-        // In a real app, you would check response.ok
-        
-        // Update local balance (simulate success)
         const updatedUser = { ...user, balance: user.balance - Number(amount) };
         localStorage.setItem('wfUser', JSON.stringify(updatedUser));
         setUser(updatedUser);
@@ -74,7 +64,6 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
         setStep(3);
         
       } catch (err) {
-        // We will ignore backend errors for this demo and just show success
         const updatedUser = { ...user, balance: user.balance - Number(amount) };
         localStorage.setItem('wfUser', JSON.stringify(updatedUser));
         setUser(updatedUser);
@@ -84,7 +73,17 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
     }, 2500);
   };
 
-  // --- UI: SUCCESS SCREEN ---
+  const handleWithdraw = () => {
+    // Reset form and go back to dashboard
+    setAmount('');
+    setIban('');
+    setSwift('');
+    setRecipientName('');
+    setOtp('');
+    setStep(1);
+    setCurrentView('dashboard');
+  };
+
   if (step === 3) {
     return (
       <div className="p-8 text-white max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
@@ -191,16 +190,17 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
         </form>
       )}
 
-      {/* STEP 2: SECURITY CHECK */}
+      {/* STEP 2: SECURITY CHECK & ACTIVATION CODE */}
       {step === 2 && (
         <form onSubmit={handleSecuritySubmit} className="space-y-6 bg-slate-900 p-6 rounded-2xl border border-slate-800">
-          <div className="flex flex-col items-center justify-center py-4 text-center">
+          
+          <div className="flex flex-col items-center justify-center text-center">
             <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-blue-400" />
             </div>
             <h3 className="text-xl font-bold mb-2">Bank Authorization</h3>
-            <p className="text-sm text-slate-400 max-w-[250px]">
-              For your security, please enter the 6-digit authorization code sent to your registered device.
+            <p className="text-sm text-slate-400 mb-6">
+              Enter your 6-digit activation code to authorize the wire transfer of <span className="text-white font-bold">${amount}</span>.
             </p>
           </div>
 
@@ -213,7 +213,15 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
               placeholder="000000"
               required
             />
-            <p className="text-xs text-emerald-400/70 text-center mt-2">Demo Hint: Enter 123456</p>
+          </div>
+
+          {/* INSTRUCTION TEXT */}
+          <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex items-start gap-3">
+            <PhoneCall className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Contact the bank customer service for an activation code. 
+              <span className="block mt-1 text-slate-500 italic">(Demo Hint: Use 123456)</span>
+            </p>
           </div>
 
           <button 
@@ -224,13 +232,17 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
             {isProcessing ? 'Authorizing Wire...' : `Authorize $${amount}`}
           </button>
           
-          <button 
-            type="button"
-            onClick={() => setStep(1)}
-            className="w-full text-slate-400 hover:text-white text-sm transition-colors"
-          >
-            Cancel and go back
-          </button>
+          {/* WITHDRAW OPTION */}
+          <div className="pt-4 border-t border-slate-800">
+            <button 
+              type="button"
+              onClick={handleWithdraw}
+              className="w-full flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 py-3 rounded-xl transition-colors text-sm font-medium"
+            >
+              <ArrowDownToLine className="w-4 h-4" /> Withdraw & Cancel Transfer
+            </button>
+          </div>
+
         </form>
       )}
     </div>
