@@ -8,11 +8,11 @@ import Profile from './Profile';
 import Settings from './Settings'; 
 import Deposit from './Deposit'; 
 import InternationalTransfer from './InternationalTransfer'; 
-import PayPalTransfer from './PayPalTransfer'; // Ensure you created this file
+import PayPalTransfer from './PayPalTransfer'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
-import BottomNav from './BottomNav'; // NEW IMPORT
+import BottomNav from './BottomNav'; 
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -38,15 +38,13 @@ function App() {
     if (currentView === 'settings') return 'Settings'; 
     if (currentView === 'deposit') return 'Fund Wallet';
     if (currentView === 'international-transfer') return 'International Transfer';
-    if (currentView === 'paypal') return 'PayPal Transfer'; // Added
+    if (currentView === 'paypal') return 'PayPal Transfer';
     return 'Dashboard';
   };
 
   if (user) {
     return (
       <div className="flex h-screen w-full bg-[#f8fafc] overflow-hidden relative">
-        
-        {/* Desktop Sidebar */}
         <Sidebar 
           setUser={handleLogout} 
           setCurrentView={setCurrentView} 
@@ -57,7 +55,6 @@ function App() {
         />
         
         <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative">
-          
           <Header 
             title={getPageTitle()} 
             userName={user.name} 
@@ -65,7 +62,6 @@ function App() {
             toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           />
           
-          {/* Main Content Area - Added pb-20 for mobile bottom nav spacing */}
           <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
             {currentView === 'transfer' ? (
               <Transfer user={user} setUser={setUser} />
@@ -88,17 +84,14 @@ function App() {
             )}
           </div>
 
-          {/* MOBILE BOTTOM NAVIGATION */}
           <div className="md:hidden">
             <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
           </div>
-
         </div>
       </div>
     );
   }
 
-  // Landing Page
   if (!showAuth) {
     return (
       <LandingPage 
@@ -108,7 +101,6 @@ function App() {
     );
   }
 
-  // Login/Register Page
   return (
     <div className="bg-[#f8fafc] min-h-screen">
       <Login setUser={setUser} />
