@@ -12,6 +12,7 @@ import PayPalTransfer from './PayPalTransfer';
 import SkrillTransfer from './SkrillTransfer'; 
 import CryptoTransfer from './CryptoTransfer'; 
 import InternalTransfer from './InternalTransfer'; 
+import Receipt from './Receipt'; // NEW IMPORT
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -37,6 +38,9 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard'); 
   const [showAuth, setShowAuth] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // NEW: State to store the clicked transaction for the receipt
+  const [selectedTransaction, setSelectedTransaction] = useState(null); 
 
   const handleLogout = () => {
     localStorage.removeItem('wfUser');
@@ -48,6 +52,7 @@ function App() {
     if (currentView === 'transfer') return 'Local Transfer';
     if (currentView === 'admin') return 'Admin Panel';
     if (currentView === 'transactions') return 'Transactions';
+    if (currentView === 'receipt') return 'Receipt'; // NEW TITLE
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
     if (currentView === 'deposit') return 'Fund Wallet';
@@ -93,8 +98,18 @@ function App() {
             ) : currentView === 'admin' ? (
               <Admin />
             ) : currentView === 'transactions' ? (
-              /* CRITICAL FIX: Passed setCurrentView here */
-              <Transactions user={user} setCurrentView={setCurrentView} /> 
+              /* Pass setSelectedTransaction here */
+              <Transactions 
+                user={user} 
+                setCurrentView={setCurrentView} 
+                setSelectedTransaction={setSelectedTransaction} 
+              /> 
+            ) : currentView === 'receipt' ? (
+              /* NEW ROUTE FOR RECEIPT */
+              <Receipt 
+                transaction={selectedTransaction} 
+                setCurrentView={setCurrentView} 
+              />
             ) : currentView === 'profile' ? (
               <Profile user={user} />
             ) : currentView === 'settings' ? (

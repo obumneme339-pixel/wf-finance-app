@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer, ArrowRight, ChevronUp } from 'lucide-react';
 
-function Transactions({ user }) {
+// Accept setCurrentView and setSelectedTransaction as props
+function Transactions({ user, setCurrentView, setSelectedTransaction }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // NEW: State to track if we are showing all or just the first 5
   const [showAll, setShowAll] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -37,7 +36,6 @@ function Transactions({ user }) {
     }
   };
 
-  // NEW: Logic to decide which transactions to show based on the state
   const displayedTransactions = showAll ? transactions : transactions.slice(0, 5);
 
   return (
@@ -84,7 +82,14 @@ function Transactions({ user }) {
             if (type === 'internal_transfer') title = 'Internal Transfer';
 
             return (
-              <div key={tx._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+              <div 
+                key={tx._id} 
+                onClick={() => {
+                  setSelectedTransaction(tx); // Save the transaction data
+                  setCurrentView('receipt'); // Navigate to the receipt page
+                }}
+                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all active:scale-[0.98]"
+              >
                 
                 {/* Top Row: Title and Amount */}
                 <div className="flex justify-between items-start mb-3">
@@ -138,7 +143,7 @@ function Transactions({ user }) {
         )}
       </div>
 
-      {/* Bottom Button - FIXED to show more on the same page */}
+      {/* Bottom Button */}
       {transactions.length > 5 && (
         <div className="flex justify-center mt-8">
           <button 
