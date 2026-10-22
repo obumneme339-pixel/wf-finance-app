@@ -139,13 +139,20 @@ function Transactions({ user }) {
       </div>
 
       {/* Bottom Button */}
-      {transactions.length > 0 && (
-        <div className="flex justify-center mt-8">
-          <button className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2">
-            View Complete History <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+{transactions.length > 0 && (
+  <div className="flex justify-center mt-8">
+    <button 
+      onClick={() => {
+        setIsLoading(true);
+        fetchTransactions(); // Re-fetches the data
+        alert("History Refreshed! ✅");
+      }}
+      className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2"
+    >
+      Refresh History <ArrowRight className="w-4 h-4" />
+    </button>
+  </div>
+)}
     </div>
   );
 }
