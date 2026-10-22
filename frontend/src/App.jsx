@@ -10,6 +10,7 @@ import Deposit from './Deposit';
 import InternationalTransfer from './InternationalTransfer'; 
 import PayPalTransfer from './PayPalTransfer'; 
 import SkrillTransfer from './SkrillTransfer'; 
+import CryptoTransfer from './CryptoTransfer'; // NEW IMPORT
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -32,7 +33,7 @@ function App() {
   };
 
   const getPageTitle = () => {
-    if (currentView === 'transfer') return 'Local Transfer';
+    if (currentView === 'transfer') return 'Transfer Money';
     if (currentView === 'admin') return 'Admin Panel';
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
@@ -41,6 +42,9 @@ function App() {
     if (currentView === 'international-transfer') return 'Wire Transfer';
     if (currentView === 'paypal') return 'PayPal Transfer';
     if (currentView === 'skrill') return 'Skrill Transfer';
+    if (currentView === 'btc-transfer') return 'Send Bitcoin';
+    if (currentView === 'eth-transfer') return 'Send Ethereum';
+    if (currentView === 'usdt-transfer') return 'Send Tether';
     return 'Dashboard';
   };
 
@@ -83,6 +87,12 @@ function App() {
               <PayPalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : currentView === 'skrill' ? (
               <SkrillTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
+            ) : currentView === 'btc-transfer' ? (
+              <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="btc" />
+            ) : currentView === 'eth-transfer' ? (
+              <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="eth" />
+            ) : currentView === 'usdt-transfer' ? (
+              <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="usdt" />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}

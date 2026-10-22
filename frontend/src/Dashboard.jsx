@@ -134,8 +134,12 @@ function Dashboard({ user, setCurrentView }) {
       <section>
         <h2 className="mb-3 px-1 text-xs font-extrabold uppercase tracking-widest text-gray-500">Crypto Transfer</h2>
         <div className="grid grid-cols-3 gap-3">
-          {[{ name: "Bitcoin", Logo: BitcoinLogo }, { name: "Ethereum", Logo: EthereumLogo }, { name: "Tether", Logo: TetherLogo }].map(({ name, Logo }) => (
-            <button key={name} className="flex flex-col items-center rounded-2xl bg-white px-2 py-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md active:scale-[0.98]">
+          {[
+            { name: "Bitcoin", Logo: BitcoinLogo, view: "btc-transfer" }, 
+            { name: "Ethereum", Logo: EthereumLogo, view: "eth-transfer" }, 
+            { name: "Tether", Logo: TetherLogo, view: "usdt-transfer" }
+          ].map(({ name, Logo, view }) => (
+            <button key={name} onClick={() => setCurrentView(view)} className="flex flex-col items-center rounded-2xl bg-white px-2 py-4 shadow-sm ring-1 ring-gray-100 transition hover:shadow-md active:scale-[0.98]">
               <Logo size={36} />
               <p className="mt-2.5 text-xs font-extrabold text-gray-900">{name}</p>
               <ArrowRight className="mt-1.5 h-4 w-4 text-gray-400" strokeWidth={2.5} />

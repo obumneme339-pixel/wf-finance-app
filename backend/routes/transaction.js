@@ -215,4 +215,46 @@ router.post('/external-transfer', async (req, res) => {
   }
 });
 
+// @route   POST /api/transaction/crypto-transfer
+// @desc    Process a crypto transfer to an external wallet
+router.post('/crypto-transfer', async (req, res) => {
+  try {
+    const { email, cryptoType, amount, walletAddress, pin } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 1. Verify Transaction PIN
+    const isPinMatch = await bcrypt.compare(pin, user.transactionPin);
+    if (!isPinMatch) {
+      return res.status(400).json({ message: "Invalid Transaction PIN" });
+    }
+
+    // 2. Check Crypto Balance
+    const transferAmount = Number(amount);
+    if (!user.crypto || user.crypto[cryptoType] < transferAmount) {
+      return res.status(400).json({ message: `Insufficient ${cryptoType.toUpperCase()} funds` });
+    }
+
+    // 3. Deduct Crypto Balance
+    user.crypto[cryptoType] -= transferAmount;
+    await user.save();
+
+    // 4. Save Transaction
+    const newTransaction = new Transaction({
+      senderEmail: email,
+      receiverEmail: walletAddress,
+      amount: transferAmount,
+      type: `${cryptoType}_transfer`
+    });
+    await newTransaction.save();
+
+    res.json({ message: `${cryptoType.toUpperCase()} transfer successful!`, user });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
