@@ -11,12 +11,13 @@ import InternationalTransfer from './InternationalTransfer';
 import PayPalTransfer from './PayPalTransfer'; 
 import SkrillTransfer from './SkrillTransfer'; 
 import CryptoTransfer from './CryptoTransfer'; 
-import InternalTransfer from './InternalTransfer'; // NEW
+import InternalTransfer from './InternalTransfer'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
 import BottomNav from './BottomNav'; 
 
+// Placeholder for upcoming pages
 const PlaceholderPage = ({ title }) => (
   <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center p-8 bg-[#f8fafc]">
     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4">
@@ -56,7 +57,7 @@ function App() {
     if (currentView === 'btc-transfer') return 'Send Bitcoin';
     if (currentView === 'eth-transfer') return 'Send Ethereum';
     if (currentView === 'usdt-transfer') return 'Send Tether';
-    if (currentView === 'internal-transfer') return 'Internal Transfer'; // NEW
+    if (currentView === 'internal-transfer') return 'Internal Transfer';
     if (currentView === 'statement') return 'Account Statement';
     if (currentView === 'investments') return 'Investments';
     if (currentView === 'grants') return 'Grant Applications';
@@ -92,7 +93,8 @@ function App() {
             ) : currentView === 'admin' ? (
               <Admin />
             ) : currentView === 'transactions' ? (
-              <Transactions user={user} /> 
+              /* CRITICAL FIX: Passed setCurrentView here */
+              <Transactions user={user} setCurrentView={setCurrentView} /> 
             ) : currentView === 'profile' ? (
               <Profile user={user} />
             ) : currentView === 'settings' ? (

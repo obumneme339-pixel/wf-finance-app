@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer, ArrowRight } from 'lucide-react';
 
-function Transactions({ user }) {
+function Transactions({ user, setCurrentView }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,8 +44,8 @@ function Transactions({ user }) {
         <p className="text-sm text-gray-500 font-medium mt-1">Track and manage all your account activities</p>
       </div>
 
-      {/* Filter Button (Visual only for now) */}
-      <button className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-6 text-gray-600 hover:bg-gray-50">
+      {/* Filter Button */}
+      <button className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-6 text-gray-600 hover:bg-gray-50 transition-colors">
         <Filter className="w-5 h-5" />
       </button>
 
@@ -79,6 +79,7 @@ function Transactions({ user }) {
             if (isDeposit) title = 'Deposit';
             if (type === 'wire_transfer') title = 'Wire Transfer';
             if (type.includes('withdrawal')) title = `${type.split('_')[0].toUpperCase()} Transfer`;
+            if (type === 'internal_transfer') title = 'Internal Transfer';
 
             return (
               <div key={tx._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -96,14 +97,12 @@ function Transactions({ user }) {
                 {/* Middle Row: Icon, Name, Status Badge, Subtext */}
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-3">
-                    {/* Icon */}
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
                       isDeposit ? 'bg-[#e6f4ea] text-[#0f5e40]' : (isSender ? 'bg-[#fdf2f2] text-rose-500' : 'bg-[#e6f4ea] text-emerald-600')
                     }`}>
                       {isDeposit ? <ArrowDownLeft className="w-5 h-5" /> : (isSender ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />)}
                     </div>
                     
-                    {/* Name & Badge */}
                     <div>
                       <p className="font-medium text-gray-700 text-sm mb-1">{displayName}</p>
                       <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${
@@ -115,7 +114,6 @@ function Transactions({ user }) {
                     </div>
                   </div>
 
-                  {/* Subtext (Completed/Processing) */}
                   <div className="text-right">
                     <p className={`text-xs font-semibold ${isPending ? 'text-[#d97706]' : 'text-gray-400'}`}>
                       {isPending ? 'Processing' : 'Completed'}
@@ -138,21 +136,17 @@ function Transactions({ user }) {
         )}
       </div>
 
-      {/* Bottom Button */}
-{transactions.length > 0 && (
-  <div className="flex justify-center mt-8">
-    <button 
-      onClick={() => {
-        setIsLoading(true);
-        fetchTransactions(); // Re-fetches the data
-        alert("History Refreshed! ✅");
-      }}
-      className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2"
-    >
-      Refresh History <ArrowRight className="w-4 h-4" />
-    </button>
-  </div>
-)}
+      {/* Bottom Button - FIXED */}
+      {transactions.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <button 
+            onClick={() => setCurrentView('statement')}
+            className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2 transition-colors active:scale-95"
+          >
+            View Complete History <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
