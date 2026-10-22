@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer, ArrowRight } from 'lucide-react';
+import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer, ArrowRight, ChevronUp } from 'lucide-react';
 
-function Transactions({ user, setCurrentView }) {
+function Transactions({ user }) {
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // NEW: State to track if we are showing all or just the first 5
+  const [showAll, setShowAll] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -22,7 +25,6 @@ function Transactions({ user, setCurrentView }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
-  // Helper to format date exactly like the screenshot
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
@@ -34,6 +36,9 @@ function Transactions({ user, setCurrentView }) {
       return { date: 'N/A', time: 'N/A' };
     }
   };
+
+  // NEW: Logic to decide which transactions to show based on the state
+  const displayedTransactions = showAll ? transactions : transactions.slice(0, 5);
 
   return (
     <div className="p-4 md:p-8 max-w-lg mx-auto pb-24 bg-[#f8fafc] min-h-screen">
@@ -56,8 +61,7 @@ function Transactions({ user, setCurrentView }) {
         ) : transactions.length === 0 ? (
           <p className="text-gray-500 text-center py-10">No transactions found.</p>
         ) : (
-          transactions.map((tx) => {
-            // Defensive checks against missing data
+          displayedTransactions.map((tx) => {
             const sender = tx.senderEmail || 'Unknown';
             const receiver = tx.receiverEmail || 'Unknown';
             const amount = Number(tx.amount) || 0;
@@ -70,11 +74,9 @@ function Transactions({ user, setCurrentView }) {
 
             const { date, time } = formatDate(tx.createdAt);
 
-            // Clean up the display name
             let displayName = isSender ? receiver : sender;
             if (isDeposit) displayName = 'Self';
             
-            // Clean up the transaction title
             let title = 'Domestic Transfer';
             if (isDeposit) title = 'Deposit';
             if (type === 'wire_transfer') title = 'Wire Transfer';
@@ -136,14 +138,18 @@ function Transactions({ user, setCurrentView }) {
         )}
       </div>
 
-      {/* Bottom Button - FIXED */}
-      {transactions.length > 0 && (
+      {/* Bottom Button - FIXED to show more on the same page */}
+      {transactions.length > 5 && (
         <div className="flex justify-center mt-8">
           <button 
-            onClick={() => setCurrentView('statement')}
+            onClick={() => setShowAll(!showAll)}
             className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2 transition-colors active:scale-95"
           >
-            View Complete History <ArrowRight className="w-4 h-4" />
+            {showAll ? (
+              <>Show Less <ChevronUp className="w-4 h-4" /></>
+            ) : (
+              <>View Complete History <ArrowRight className="w-4 h-4" /></>
+            )}
           </button>
         </div>
       )}
