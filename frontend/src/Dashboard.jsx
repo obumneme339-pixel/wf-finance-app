@@ -85,15 +85,14 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* SEND MONEY GRID */}
+      {/* SEND MONEY GRID - EXACT MATCH */}
       <div className="mb-8">
         <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mb-3 uppercase">Send Money</h3>
         <div className="grid grid-cols-2 gap-3">
           
           <button onClick={() => setCurrentView('international-transfer')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-11 h-11 bg-[#eff6ff] rounded-xl flex items-center justify-center">
-              {/* Detailed Bank SVG */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11m16-11v11M8 14v3m4-3v3m4-3v3"/>
               </svg>
             </div>
@@ -105,9 +104,9 @@ function Dashboard({ user, setUser, setCurrentView }) {
           
           <button onClick={() => setCurrentView('transfer')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-11 h-11 bg-[#f5f3ff] rounded-xl flex items-center justify-center">
-               {/* Detailed Pin SVG */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
+               {/* Exact Purple Chat Icon */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b5cf6">
+                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
               </svg>
             </div>
             <div className="text-left">
@@ -118,7 +117,12 @@ function Dashboard({ user, setUser, setCurrentView }) {
 
           <button onClick={() => setCurrentView('paypal')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-11 h-11 bg-[#eff6ff] rounded-xl flex items-center justify-center p-2">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="w-full h-full object-contain" />
+              {/* Crisp PayPal SVG */}
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <path d="M7.076 21.337H4.614c-.34 0-.59-.31-.51-.64l2.74-16.92c.06-.38.4-.65.78-.65h7.29c2.15 0 3.81.5 4.66 1.41.78.83 1.03 1.96.77 3.44-.29 1.65-1.16 3.02-2.45 3.86-1.18.77-2.67 1.16-4.42 1.16H9.96c-.3 0-.55.22-.59.52l-1.12 7.02c-.04.25-.26.44-.52.44z" fill="#003087"/>
+                <path d="M18.565 6.986c-.4 2.28-1.5 3.84-3.14 4.58-1.16.52-2.5.76-4.03.76H9.74c-.3 0-.55.22-.59.52l-1.1 7.02c-.03.2-.2.35-.4.35H5.15c-.22 0-.38-.2-.33-.41l2.7-16.88c.04-.25.26-.43.51-.43h7.83c1.65 0 2.86.34 3.55 1.03.4.4.58.9.54 1.5-.04.52-.2 1.06-.39 1.96z" fill="#001c64"/>
+                <path d="M10.313 11.043H8.92c-.16 0-.3.12-.32.28l-.62 3.93c-.02.13.08.25.21.25h.66c.24 0 .45-.17.49-.4l.38-2.45c.02-.13.14-.23.27-.23h.53c.86 0 1.51-.2 1.95-.59.45-.4.74-1 .88-1.8.12-.71.02-1.26-.3-1.65-.31-.39-.91-.59-1.76-.59H8.06c-.16 0-.3.12-.32.28l-.85 5.39c-.02.13.08.25.21.25h.75c.15 0 .27-.11.29-.26l.5-3.17c.02-.13.14-.23.27-.23h.91c.47 0 .8.1 1 .3.21.2.26.52.17.98-.07.41-.21.7-.42.88-.2.18-.53.27-.97.27z" fill="#0070e0"/>
+              </svg>
             </div>
             <div className="text-left">
               <p className="font-extrabold text-gray-900 text-[15px]">PayPal</p>
@@ -126,11 +130,11 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
           </button>
 
-          {/* FIXED SKRILL LOGO (CSS Built) */}
+          {/* PERFECT SKRILL LOGO */}
           <button className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
-            <div className="w-11 h-11 bg-[#fdf2f8] rounded-xl flex items-center justify-center p-1">
-              <div className="w-full h-full bg-[#870048] rounded-lg flex items-center justify-center">
-                <span className="text-white font-extrabold text-[12px] italic tracking-tighter">Skrill</span>
+            <div className="w-11 h-11 bg-[#fdf2f8] rounded-xl flex items-center justify-center p-1.5">
+              <div className="w-full h-full bg-[#8a0053] rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-white font-black text-[13px] tracking-tighter">Skrill</span>
               </div>
             </div>
             <div className="text-left">
