@@ -1,100 +1,70 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Globe, ShieldCheck, Lock, CheckCircle2, PhoneCall, ArrowDownToLine } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, User, Landmark, Banknote, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 function InternationalTransfer({ user, setUser, setCurrentView }) {
-  const [iban, setIban] = useState('');
-  const [swift, setSwift] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [otp, setOtp] = useState('');
-  
-  const [step, setStep] = useState(1); 
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [formData, setFormData] = useState({
+    holderName: '', accountNumber: '', iban: '', bankName: '', swift: '',
+    country: '', bankAddress: '', accountType: '', amount: '', purpose: '', pin: ''
+  });
+
+  const [showPin, setShowPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  const handleDetailsSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    const transferAmount = Number(amount);
-    if (transferAmount < 100) {
-      setError("Minimum international transfer is $100.");
-      return;
-    }
-    if (transferAmount > user.balance) {
-      setError("Insufficient funds in your account.");
-      return;
-    }
-    setStep(2);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSecuritySubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // SECRET CODE IS 82231
-    if (otp !== '82231') {
-      setError("Invalid Activation Code. Please contact customer support.");
-      return;
+    if (formData.pin.length !== 6) {
+      return setError("Please enter your 6-digit PIN.");
     }
 
-    setIsProcessing(true);
+    setIsLoading(true);
 
-    setTimeout(async () => {
-      try {
-        const dummyReceiverEmail = 'international@bank.com'; 
-        await fetch(`${API_URL}/api/transaction/transfer`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            senderEmail: user.email, 
-            receiverEmail: dummyReceiverEmail, 
-            amount: Number(amount) 
-          }),
-        });
-        
-        const updatedUser = { ...user, balance: user.balance - Number(amount) };
-        localStorage.setItem('wfUser', JSON.stringify(updatedUser));
-        setUser(updatedUser);
+    try {
+      const response = await fetch(`${API_URL}/api/transaction/wire-transfer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          amount: Number(formData.amount),
+          pin: formData.pin,
+          beneficiaryName: formData.holderName,
+          accountNumber: formData.accountNumber,
+          bankName: formData.bankName
+        }),
+      });
 
-        setIsProcessing(false);
-        setStep(3);
-        
-      } catch (err) {
-        const updatedUser = { ...user, balance: user.balance - Number(amount) };
-        localStorage.setItem('wfUser', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        setIsProcessing(false);
-        setStep(3);
-      }
-    }, 2500);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      localStorage.setItem('wfUser', JSON.stringify(data.user));
+      setUser(data.user);
+      setSuccess(true);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleWithdraw = () => {
-    setAmount('');
-    setIban('');
-    setSwift('');
-    setRecipientName('');
-    setOtp('');
-    setStep(1);
-    setCurrentView('dashboard');
-  };
-
-  if (step === 3) {
+  if (success) {
     return (
-      <div className="p-8 text-white max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
-          <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+      <div className="p-8 max-w-lg mx-auto min-h-screen flex flex-col items-center justify-center text-center">
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <ShieldCheck className="w-10 h-10 text-emerald-600" />
         </div>
-        <h2 className="text-3xl font-bold mb-2">Transfer Sent</h2>
-        <p className="text-slate-400 text-center mb-8">
-          Your international transfer of <span className="text-white font-bold">${Number(amount).toFixed(2)}</span> to {recipientName} is being processed.
-        </p>
-        <button 
-          onClick={() => setCurrentView('dashboard')}
-          className="w-full bg-[#d4f762] hover:bg-[#c2e654] text-slate-900 font-bold py-4 rounded-xl transition-colors"
-        >
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Transfer Authorized</h2>
+        <p className="text-gray-500 mb-8">Your wire transfer of £{Number(formData.amount).toFixed(2)} to {formData.holderName} is being processed.</p>
+        <button onClick={() => setCurrentView('dashboard')} className="w-full bg-[#0f5e40] text-white font-bold py-4 rounded-xl shadow-md">
           Back to Dashboard
         </button>
       </div>
@@ -102,142 +72,129 @@ function InternationalTransfer({ user, setUser, setCurrentView }) {
   }
 
   return (
-    <div className="p-4 md:p-8 text-white max-w-md mx-auto pb-20">
-      <button 
-        onClick={() => setCurrentView('dashboard')}
-        className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5" /> Back to Dashboard
-      </button>
-
-      <div className="flex items-center gap-3 mb-2">
-        <Globe className="w-8 h-8 text-blue-400" />
-        <h2 className="text-3xl font-bold">International Transfer</h2>
-      </div>
-      <p className="text-slate-400 mb-8">Send money globally via secure wire transfer.</p>
-
-      {error && (
-        <div className="bg-red-500/20 border border-red-500 text-red-400 p-3 rounded-lg mb-6 text-sm">
-          {error}
+    <div className="min-h-screen bg-white pb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#e6f4ea] rounded-xl flex items-center justify-center">
+            <ArrowLeftRight className="w-5 h-5 text-[#0f5e40]" />
+          </div>
+          <div>
+            <h1 className="text-lg font-extrabold text-gray-900">Send Money via Wire</h1>
+            <p className="text-xs text-gray-500">Secure international transfer</p>
+          </div>
         </div>
-      )}
+        <button onClick={() => setCurrentView('dashboard')} className="text-gray-400 hover:text-gray-700">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
 
-      {step === 1 && (
-        <form onSubmit={handleDetailsSubmit} className="space-y-5 bg-slate-900 p-6 rounded-2xl border border-slate-800">
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Recipient Full Name</label>
-            <input 
-              type="text" 
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500"
-              placeholder="Jane Doe"
-              required
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="p-4 max-w-lg mx-auto space-y-5">
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100 text-center">{error}</div>}
 
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">IBAN / Account Number</label>
-            <input 
-              type="text" 
-              value={iban}
-              onChange={(e) => setIban(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 font-mono"
-              placeholder="GB29 NWBK 6016 1331 9268 19"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">SWIFT / BIC Code</label>
-            <input 
-              type="text" 
-              value={swift}
-              onChange={(e) => setSwift(e.target.value.toUpperCase())}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 font-mono"
-              placeholder="NWBKGB2L"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Amount to Send ($)</label>
-            <div className="relative">
-              <span className="absolute left-4 top-3 text-slate-400 font-bold text-xl">$</span>
-              <input 
-                type="number" 
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 pl-8 text-xl font-bold focus:outline-none focus:border-blue-500"
-                placeholder="0.00"
-                required
-                min="100"
-              />
+        {/* Beneficiary Info */}
+        <div className="bg-[#f8fafc] p-5 rounded-2xl border border-gray-100">
+          <h3 className="text-sm font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+            <User className="w-4 h-4 text-[#0f5e40]" /> Beneficiary Information
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">ACCOUNT HOLDER NAME</label>
+              <input type="text" name="holderName" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="John Smith" required />
             </div>
-            <p className="text-xs text-slate-500 mt-1">Available: ${user.balance.toFixed(2)}</p>
-          </div>
-
-          <button 
-            type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors mt-4"
-          >
-            Continue to Security Check
-          </button>
-        </form>
-      )}
-
-      {step === 2 && (
-        <form onSubmit={handleSecuritySubmit} className="space-y-6 bg-slate-900 p-6 rounded-2xl border border-slate-800">
-          
-          <div className="flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-              <Lock className="w-8 h-8 text-blue-400" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">ACCOUNT NUMBER</label>
+                <input type="text" name="accountNumber" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="123456789" required />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">IBAN</label>
+                <input type="text" name="iban" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="GB29NWBK601..." required />
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-2">Bank Authorization</h3>
-            <p className="text-sm text-slate-400 mb-6">
-              Enter your activation code to authorize the wire transfer of <span className="text-white font-bold">${amount}</span>.
-            </p>
           </div>
+        </div>
 
-          <div>
+        {/* Bank Details */}
+        <div className="bg-white p-5 rounded-2xl border border-gray-100">
+          <h3 className="text-sm font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+            <Landmark className="w-4 h-4 text-amber-500" /> Bank Details
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">BANK NAME</label>
+              <input type="text" name="bankName" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="Bank of America" required />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">SWIFT / BIC CODE</label>
+                <input type="text" name="swift" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="BOFAUS3N" required />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">COUNTRY</label>
+                <input type="text" name="country" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="United States" required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">BANK ADDRESS</label>
+              <input type="text" name="bankAddress" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40]" placeholder="100 N Tryon St, Charlotte" required />
+            </div>
+          </div>
+        </div>
+
+        {/* Transfer Amount */}
+        <div className="bg-[#f4faf7] p-5 rounded-2xl border border-emerald-100">
+          <h3 className="text-sm font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+            <Banknote className="w-4 h-4 text-[#0f5e40]" /> Transfer Amount
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">AMOUNT TO SEND</label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-[#0f5e40] font-bold text-lg">£</span>
+                <input type="number" name="amount" onChange={handleChange} className="w-full bg-white border-2 border-[#0f5e40] rounded-xl p-3 pl-8 text-2xl font-extrabold text-gray-900 focus:outline-none" placeholder="0.00" required />
+              </div>
+              <p className="text-xs text-gray-500 mt-2 font-medium">Available: £{user.balance.toFixed(2)}</p>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 mb-1 tracking-wider">TRANSFER PURPOSE (OPTIONAL)</label>
+              <textarea name="purpose" onChange={handleChange} className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-[#0f5e40] resize-none h-20" placeholder="Invoice payment, personal transfer, etc." />
+            </div>
+          </div>
+        </div>
+
+        {/* Secure Transaction */}
+        <div className="bg-[#fffbf0] p-5 rounded-2xl border border-amber-100">
+          <h3 className="text-sm font-extrabold text-gray-900 mb-1 flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-500" /> Secure Transaction
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">Enter your PIN to authorize this transfer</p>
+          <div className="relative">
             <input 
-              type="text" 
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl p-4 text-center text-2xl font-mono tracking-[1em] focus:outline-none focus:border-emerald-500"
-              placeholder="••••••"
-              required
+              type={showPin ? "text" : "password"} 
+              name="pin" 
+              maxLength="6" 
+              onChange={handleChange} 
+              className="w-full bg-white border-2 border-amber-400 rounded-xl p-3 tracking-[0.5em] text-center text-xl font-mono text-gray-900 focus:outline-none" 
+              placeholder="••••••" 
+              required 
             />
-          </div>
-
-          {/* INSTRUCTION TEXT - NO HINTS, ONLY CUSTOMER SERVICE */}
-          <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex items-start gap-3">
-            <PhoneCall className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Please contact the bank customer support to receive your activation code and complete this transfer.
-            </p>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={isProcessing}
-            className="w-full bg-[#d4f762] hover:bg-[#c2e654] text-slate-900 font-bold py-4 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center"
-          >
-            {isProcessing ? 'Authorizing Wire...' : `Authorize $${amount}`}
-          </button>
-          
-          <div className="pt-4 border-t border-slate-800">
-            <button 
-              type="button"
-              onClick={handleWithdraw}
-              className="w-full flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 py-3 rounded-xl transition-colors text-sm font-medium"
-            >
-              <ArrowDownToLine className="w-4 h-4" /> Withdraw & Cancel Transfer
+            <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-3 text-gray-400">
+              {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
+        </div>
 
-        </form>
-      )}
+        {/* Submit Button */}
+        <button type="submit" disabled={isLoading} className="w-full bg-[#88c5a8] hover:bg-[#72b393] text-white font-extrabold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 mt-4">
+          <ShieldCheck className="w-5 h-5" /> {isLoading ? 'Authorizing...' : 'Authorize & Send Money'}
+        </button>
+
+        <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mt-2">
+          <ShieldCheck className="w-3 h-3" /> Your transaction is secured with bank-grade encryption
+        </div>
+
+      </form>
     </div>
   );
 }
