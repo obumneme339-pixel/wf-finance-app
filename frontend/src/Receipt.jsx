@@ -1,7 +1,11 @@
 import React from 'react';
-import { ArrowLeft, CheckCircle2, Clock, Printer, Download, ShieldCheck, Copy } from 'lucide-react';
+import { 
+  ArrowLeft, CheckCircle2, Clock, Printer, Download, 
+  Copy, ArrowUpRight, ArrowDownLeft, FileText, User, 
+  CreditCard, ShieldCheck, Wallet, ArrowRightLeft
+} from 'lucide-react';
 
-function Receipt({ transaction, setCurrentView }) {
+function Receipt({ transaction, setCurrentView, user }) {
   if (!transaction) {
     return (
       <div className="p-8 text-center mt-20">
@@ -11,105 +15,233 @@ function Receipt({ transaction, setCurrentView }) {
     );
   }
 
-  const isSender = transaction.type !== 'deposit'; // If not a deposit, they are sending
-  const isPending = transaction.status === 'Pending';
-  const amount = Number(transaction.amount) || 0;
+  // --- DATA LOGIC ---
+  const isDeposit = transaction.type === 'deposit';
+  const isDebit = !isDeposit; // Everything else is treated as outgoing
   
-  // Format Date
-  const dateObj = new Date(transaction.createdAt);
-  const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const amount = Number(transaction.amount) || 0;
+  const status = transaction.status || 'Completed';
+  const isPending = status === 'Pending';
 
-  const handlePrint = () => {
-    window.print(); // This triggers the browser's print dialog (Save as PDF)
-  };
+  const dateObj = new Date(transaction.createdAt);
+  const formattedDate = dateObj.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+  const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  
+  // Format the ID like the spec: CRT2RUN5PYFEDK5 or CRED/NHF...
+  const txId = transaction._id.slice(-12).toUpperCase();
+  const receiptRef = `CRED/${txId.slice(0, 6)}-${dateObj.getFullYear()}`;
+
+  const handlePrint = () => window.print();
+  const copyToClipboard = (text) => navigator.clipboard.writeText(text);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-24">
-      {/* Header Bar */}
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-100 sticky top-0 z-10">
-        <button onClick={() => setCurrentView('transactions')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <h1 className="text-lg font-extrabold text-gray-900 tracking-tight">Transaction Receipt</h1>
-        <div className="w-9"></div> {/* Spacer for alignment */}
-      </div>
-
-      <div className="p-4 max-w-lg mx-auto mt-4">
-        
-        {/* Main Receipt Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-          
-          {/* Top Colored Header */}
-          <div className="bg-[#0f5e40] p-8 text-center flex flex-col items-center text-white">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isPending ? 'bg-amber-500/20 text-amber-300' : 'bg-white/20 text-white'}`}>
-              {isPending ? <Clock className="w-8 h-8" /> : <CheckCircle2 className="w-8 h-8" />}
-            </div>
-            <p className="text-sm font-medium text-emerald-100 mb-1">
-              {isSender ? 'Amount Sent' : 'Amount Received'}
-            </p>
-            <h2 className="text-4xl font-extrabold tracking-tight">
-              {isSender ? '-' : '+'}£{amount.toFixed(2)}
-            </h2>
-            <div className={`mt-3 inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isPending ? 'bg-amber-500/20 text-amber-200' : 'bg-white/20 text-white'}`}>
-              {transaction.status || 'Completed'}
-            </div>
-          </div>
-
-          {/* Details Section */}
-          <div className="p-6 space-y-6">
-            
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <span className="text-sm font-medium text-gray-500">Transaction Type</span>
-              <span className="text-sm font-bold text-gray-900 uppercase">
-                {transaction.type?.replace('_', ' ') || 'Transfer'}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <span className="text-sm font-medium text-gray-500">Date & Time</span>
-              <span className="text-sm font-bold text-gray-900 text-right">
-                {formattedDate} <br/> <span className="text-xs text-gray-500">{formattedTime}</span>
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-              <span className="text-sm font-medium text-gray-500">Transaction ID</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded-md">
-                  {transaction._id.slice(-10).toUpperCase()}
-                </span>
-                <Copy className="w-4 h-4 text-gray-400 cursor-pointer hover:text-emerald-600" onClick={() => navigator.clipboard.writeText(transaction._id)} />
-              </div>
-            </div>
-
-            {/* Recipient Info (Only shows if money was sent) */}
-            {isSender && (
-              <div className="bg-gray-50 rounded-2xl p-4 space-y-3 mt-4">
-                <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Recipient Details</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Name / Account</span>
-                  <span className="text-sm font-bold text-gray-900 text-right max-w-[200px] truncate">
-                    {transaction.receiverEmail || 'External Account'}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 text-xs text-gray-400 mt-6 justify-center">
-              <ShieldCheck className="w-4 h-4" /> Secured by WF Finance
-            </div>
-
+    <div className="min-h-screen bg-[#F8F9FA] pb-24 font-sans text-[#172126]">
+      
+      {/* Global Top Header (Matches the Credit Screenshot) */}
+      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
+        <div className="flex items-center gap-4">
+          <button onClick={() => setCurrentView('transactions')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg">
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
+          </button>
+          <div>
+            <h1 className="text-xl font-extrabold text-gray-900">{isDeposit ? 'Deposit Receipt' : 'Transaction Receipt'}</h1>
+            {isDeposit && <p className="text-xs text-gray-500 font-medium">{receiptRef}</p>}
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <button onClick={handlePrint} className="bg-white border border-gray-200 text-gray-700 font-bold py-3.5 rounded-xl shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors">
-            <Printer className="w-4 h-4" /> Print
+        {isDeposit && (
+          <button onClick={() => copyToClipboard(receiptRef)} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200">
+            <Copy className="w-4 h-4 text-gray-600" />
           </button>
-          <button onClick={handlePrint} className="bg-[#0f5e40] text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-[#0a3a27] flex items-center justify-center gap-2 transition-colors">
-            <Download className="w-4 h-4" /> Save PDF
+        )}
+      </div>
+
+      <div className="p-4 max-w-lg mx-auto mt-4 space-y-4">
+        
+        {/* ========================================================= */}
+        {/* DEBIT LAYOUT (Outgoing Transfers)                         */}
+        {/* ========================================================= */}
+        {isDebit && (
+          <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+            
+            {/* Green Header */}
+            <div className="bg-[#206A49] p-6 text-white relative">
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                  <div>
+                    <h2 className="font-extrabold tracking-widest text-sm">CREDENCE</h2>
+                    <p className="text-[8px] tracking-wider text-emerald-200">PREMIUM BANKING</p>
+                  </div>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                  isPending ? 'bg-yellow-500/20 text-yellow-200 border-yellow-400/30' : 'bg-white/20 text-white border-white/30'
+                }`}>
+                  {isPending ? 'PENDING' : 'PROCESSED'}
+                </div>
+              </div>
+              <h3 className="text-xl font-medium mt-4">Transaction Receipt</h3>
+            </div>
+
+            {/* Debit Amount Section */}
+            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Transaction Amount</p>
+                <p className="text-4xl font-extrabold text-[#C95878]">- £{amount.toFixed(2)}</p>
+              </div>
+              <div className="w-16 h-16 bg-[#F9EBEF] rounded-2xl border border-[#C95878]/20 flex items-center justify-center">
+                <ArrowUpRight className="w-8 h-8 text-[#C95878]" />
+              </div>
+            </div>
+            
+            <div className="bg-[#F9EBEF] px-8 py-3 flex items-center gap-2 border-b border-gray-100">
+              <span className="w-4 h-4 rounded-full bg-[#C95878]/20 flex items-center justify-center text-[#C95878] font-bold text-[10px]">i</span>
+              <p className="text-xs font-medium text-[#C95878]">Funds sent from your account</p>
+            </div>
+
+            {/* Debit Details Section */}
+            <div className="p-6 space-y-5">
+              <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-widest flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#206A49]" /> Transaction Details
+              </h4>
+              
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Transaction ID</p>
+                  <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <span className="text-sm font-mono font-bold text-gray-800">{txId}</span>
+                    <Copy onClick={() => copyToClipboard(txId)} className="w-4 h-4 text-gray-400 cursor-pointer hover:text-[#206A49]" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Transaction Date</p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-sm font-medium text-gray-800">{formattedDate} • {formattedTime}</div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Payment Method</p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-sm font-medium text-gray-800 capitalize">{transaction.type.replace('_', ' ')}</div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Transaction Type</p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <span className="text-xs font-bold text-[#C95878] bg-[#F9EBEF] px-3 py-1 rounded-md">DEBIT</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recipient Info (Only for Debit) */}
+              <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-widest flex items-center gap-2 mt-8">
+                <User className="w-4 h-4 text-[#206A49]" /> Recipient Information
+              </h4>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Account Name</p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-sm font-medium text-gray-800">{transaction.receiverEmail || 'N/A'}</div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Bank Name</p>
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-sm font-medium text-gray-800">Credence / External</div>
+                </div>
+              </div>
+
+              {/* Processing Details */}
+              <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-widest flex items-center gap-2 mt-8">
+                <Clock className="w-4 h-4 text-[#206A49]" /> Processing Details
+              </h4>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Processed By</span>
+                  <span className="font-bold text-gray-800">Admin Manager</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Processing Time</span>
+                  <span className="font-bold text-gray-800">{formattedDate} - {formattedTime}</span>
+                </div>
+              </div>
+
+              {/* Balance After */}
+              <div className="bg-[#EAF5EF] p-4 rounded-xl border border-[#206A49]/20 mt-4 flex justify-between items-center">
+                <span className="text-xs font-bold text-[#206A49] uppercase">Balance After Transaction</span>
+                <span className="text-xl font-extrabold text-gray-900">£{user.balance.toFixed(2)}</span>
+              </div>
+
+              {/* Important Notice */}
+              <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 mt-6 text-center">
+                <p className="text-[10px] font-bold text-gray-800 uppercase tracking-widest mb-2 flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-[#206A49]" /> Important Notice
+                </p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  This is an official transaction receipt from Credence Bank. Please retain for your records. Contact mail@karamelscript.name.ng for questions.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* CREDIT LAYOUT (Incoming Deposits)                         */}
+        {/* ========================================================= */}
+        {isDeposit && (
+          <>
+            {/* Main Deposit Summary Card */}
+            <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <ArrowDownLeft className="w-4 h-4 text-[#206A49]" />
+                <span className="text-xs font-bold text-[#206A49] uppercase tracking-wider">Deposit</span>
+              </div>
+              
+              <h2 className="text-5xl font-extrabold text-gray-900 tracking-tight mb-6">
+                + £{amount.toFixed(2)}
+              </h2>
+              
+              <div className="flex justify-between items-end">
+                <p className="text-xs font-medium text-gray-500">{formattedDate} • {formattedTime}</p>
+                <div className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                  isPending ? 'bg-[#FFF8E6] text-[#D7B74F]' : 'bg-[#EAF5EF] text-[#206A49]'
+                }`}>
+                  {isPending ? <Clock className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {status}
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method & Type Card */}
+            <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="flex justify-between items-center p-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="w-5 h-5 text-gray-400" />
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment Method</span>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-[#EAF5EF] flex items-center justify-center">
+                  <Wallet className="w-4 h-4 text-[#206A49]" />
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center p-5">
+                <div className="flex items-center gap-3">
+                  <ArrowRightLeft className="w-5 h-5 text-gray-400" />
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Type</span>
+                </div>
+                <span className="text-sm font-bold text-gray-900">Incoming Deposit</span>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ========================================================= */}
+        {/* SHARED BOTTOM ACTION BUTTONS                              */}
+        {/* ========================================================= */}
+        <div className="pt-4 space-y-3">
+          <div className="flex gap-3">
+            <button onClick={handlePrint} className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3.5 rounded-xl shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors">
+              <Printer className="w-4 h-4" /> Print
+            </button>
+            <button onClick={handlePrint} className="flex-1 bg-white border border-gray-300 text-gray-700 font-bold py-3.5 rounded-xl shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 transition-colors">
+              <Download className="w-4 h-4" /> Download
+            </button>
+          </div>
+          
+          <button onClick={() => setCurrentView('transactions')} className="w-full bg-[#206A49] text-white font-bold py-4 rounded-xl shadow-md hover:bg-[#1a553a] flex items-center justify-center gap-2 transition-colors">
+            <ArrowLeft className="w-5 h-5" /> Back to History
           </button>
         </div>
 
