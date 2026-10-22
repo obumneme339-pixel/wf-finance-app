@@ -128,4 +128,48 @@ router.post('/wire-transfer', async (req, res) => {
   }
 });
 
+// @route   POST /api/transaction/local-transfer
+// @desc    Process a local transfer with PIN verification
+router.post('/local-transfer', async (req, res) => {
+  try {
+    const { 
+      email, amount, pin, beneficiaryName, 
+      accountNumber, bankName, accountType, purpose 
+    } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // 1. Verify Transaction PIN
+    const isPinMatch = await bcrypt.compare(pin, user.transactionPin);
+    if (!isPinMatch) {
+      return res.status(400).json({ message: "Invalid Transaction PIN" });
+    }
+
+    // 2. Check Balance
+    if (user.balance < amount) {
+      return res.status(400).json({ message: "Insufficient funds" });
+    }
+
+    // 3. Deduct Balance
+    user.balance -= amount;
+    await user.save();
+
+    // 4. Save Transaction
+    const newTransaction = new Transaction({
+      senderEmail: email,
+      receiverEmail: `${beneficiaryName} (${bankName} - ${accountNumber})`,
+      amount: amount,
+      type: 'local_transfer'
+    });
+    await newTransaction.save();
+
+    res.json({ message: "Local transfer successful!", user });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
