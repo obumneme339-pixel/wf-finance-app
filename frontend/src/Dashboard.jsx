@@ -12,7 +12,7 @@ function Dashboard({ user, setUser, setCurrentView }) {
       try {
         const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
         const data = await response.json();
-        if (Array.isArray(data)) setTransactions(data.slice(0, 3)); // Just get top 3 for dashboard
+        if (Array.isArray(data)) setTransactions(data.slice(0, 3)); 
       } catch (err) {
         console.error(err);
       }
@@ -23,15 +23,12 @@ function Dashboard({ user, setUser, setCurrentView }) {
   return (
     <div className="p-4 md:p-8 max-w-lg mx-auto pb-24 bg-[#f8fafc] min-h-screen">
       
-      {/* Welcome Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.name}</h1>
         <p className="text-sm text-gray-500 mt-1">Here's an overview of your account activity.</p>
       </div>
 
-      {/* Main Balance Card */}
       <div className="bg-gradient-to-br from-[#115e3f] to-[#0a3a27] rounded-3xl p-6 shadow-xl mb-8 relative overflow-hidden text-white">
-        {/* Background decoration */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
 
         <div className="flex justify-between items-center mb-2">
@@ -50,7 +47,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
           </button>
         </div>
 
-        {/* Crypto Balances inside the card */}
         <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-4">
           <div>
             <div className="flex items-center gap-1 text-emerald-200 mb-1">
@@ -79,7 +75,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* Send Money Grid */}
       <div className="mb-8">
         <h3 className="text-xs font-bold text-gray-400 tracking-wider mb-3 uppercase">Send Money</h3>
         <div className="grid grid-cols-2 gap-3">
@@ -103,7 +98,7 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
           </button>
 
-          <button className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
+          <button onClick={() => setCurrentView('paypal')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold italic">
               P
             </div>
@@ -125,7 +120,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* Crypto Transfer Grid */}
       <div className="mb-8">
         <h3 className="text-xs font-bold text-gray-400 tracking-wider mb-3 uppercase">Crypto Transfer</h3>
         <div className="grid grid-cols-3 gap-3">
@@ -153,7 +147,6 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* Recent Transactions */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase">Recent Transactions</h3>
