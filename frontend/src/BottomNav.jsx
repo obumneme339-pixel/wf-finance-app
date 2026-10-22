@@ -6,7 +6,7 @@ function BottomNav({ currentView, setCurrentView }) {
     { id: 'dashboard', label: 'Home', icon: Home },
     { id: 'transactions', label: 'Activity', icon: Activity },
     { id: 'transfer', label: 'Transfer', icon: Send, isPrimary: true },
-    { id: 'cards', label: 'Cards', icon: CreditCard }, // We can build this page later
+    { id: 'profile', label: 'Cards', icon: CreditCard }, 
     { id: 'profile', label: 'Account', icon: User },
   ];
 
@@ -20,7 +20,7 @@ function BottomNav({ currentView, setCurrentView }) {
           if (item.isPrimary) {
             return (
               <button
-                key={item.id}
+                key={item.label}
                 onClick={() => setCurrentView(item.id)}
                 className="flex flex-col items-center justify-center -mt-6 bg-[#0f5e40] text-white w-14 h-14 rounded-full shadow-lg border-4 border-white transition-transform hover:scale-105"
               >
@@ -31,7 +31,7 @@ function BottomNav({ currentView, setCurrentView }) {
 
           return (
             <button
-              key={item.id}
+              key={item.label}
               onClick={() => setCurrentView(item.id)}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
                 isActive ? 'text-[#0f5e40]' : 'text-gray-400 hover:text-gray-600'
