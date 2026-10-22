@@ -8,9 +8,11 @@ import Profile from './Profile';
 import Settings from './Settings'; 
 import Deposit from './Deposit'; 
 import InternationalTransfer from './InternationalTransfer'; 
+import PayPalTransfer from './PayPalTransfer'; // Ensure you created this file
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
+import BottomNav from './BottomNav'; // NEW IMPORT
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -36,12 +38,15 @@ function App() {
     if (currentView === 'settings') return 'Settings'; 
     if (currentView === 'deposit') return 'Fund Wallet';
     if (currentView === 'international-transfer') return 'International Transfer';
+    if (currentView === 'paypal') return 'PayPal Transfer'; // Added
     return 'Dashboard';
   };
 
   if (user) {
     return (
-      <div className="flex h-screen w-full bg-slate-950 overflow-hidden relative">
+      <div className="flex h-screen w-full bg-[#f8fafc] overflow-hidden relative">
+        
+        {/* Desktop Sidebar */}
         <Sidebar 
           setUser={handleLogout} 
           setCurrentView={setCurrentView} 
@@ -51,8 +56,8 @@ function App() {
           setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
         
-        <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
-          {/* ADDED user={user} HERE FOR THE NOTIFICATIONS */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative">
+          
           <Header 
             title={getPageTitle()} 
             userName={user.name} 
@@ -60,7 +65,8 @@ function App() {
             toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           />
           
-          <div className="flex-1 overflow-y-auto bg-slate-950 p-4 md:p-0">
+          {/* Main Content Area - Added pb-20 for mobile bottom nav spacing */}
+          <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
             {currentView === 'transfer' ? (
               <Transfer user={user} setUser={setUser} />
             ) : currentView === 'admin' ? (
@@ -75,15 +81,24 @@ function App() {
               <Deposit user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : currentView === 'international-transfer' ? (
               <InternationalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
+            ) : currentView === 'paypal' ? (
+              <PayPalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}
           </div>
+
+          {/* MOBILE BOTTOM NAVIGATION */}
+          <div className="md:hidden">
+            <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
+          </div>
+
         </div>
       </div>
     );
   }
 
+  // Landing Page
   if (!showAuth) {
     return (
       <LandingPage 
@@ -93,12 +108,13 @@ function App() {
     );
   }
 
+  // Login/Register Page
   return (
-    <div>
+    <div className="bg-[#f8fafc] min-h-screen">
       <Login setUser={setUser} />
       <button 
         onClick={() => setShowAuth(false)} 
-        className="fixed top-4 left-4 text-slate-400 hover:text-white flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg backdrop-blur-sm z-50"
+        className="fixed top-4 left-4 text-gray-500 hover:text-gray-900 flex items-center gap-2 bg-white/50 p-2 rounded-lg backdrop-blur-sm z-50 font-medium"
       >
         ← Back to Home
       </button>
