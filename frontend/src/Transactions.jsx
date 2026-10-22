@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer } from 'lucide-react';
 
 function Transactions({ user }) {
   const [transactions, setTransactions] = useState([]);
@@ -10,18 +10,11 @@ function Transactions({ user }) {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        console.log("Fetching for:", user.email); // Debugging
         const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
         const data = await response.json();
-        
-        // Ensure it's an array before setting it
-        if (Array.isArray(data)) {
-          setTransactions(data);
-        } else {
-          console.error("Data is not an array:", data);
-        }
+        if (Array.isArray(data)) setTransactions(data);
       } catch (err) {
-        console.error("Failed to fetch transactions", err);
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -29,52 +22,122 @@ function Transactions({ user }) {
     fetchTransactions();
   }, [user.email, API_URL]);
 
+  // Helper to format date exactly like the screenshot
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    };
+  };
+
   return (
-    <div className="p-4 md:p-8 text-white max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold">Transaction History 🧾</h2>
-        <p className="text-slate-400 mt-1">View all your past activity in one place.</p>
+    <div className="p-4 md:p-8 max-w-lg mx-auto pb-24 bg-[#f8fafc] min-h-screen">
+      
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-extrabold text-gray-900 tracking-tight">Transaction History</h1>
+        <p className="text-sm text-gray-500 font-medium mt-1">Track and manage all your account activities</p>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+      {/* Filter Button (Visual only for now) */}
+      <button className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm mb-6 text-gray-600 hover:bg-gray-50">
+        <Filter className="w-5 h-5" />
+      </button>
+
+      {/* Transaction List */}
+      <div className="space-y-4">
         {isLoading ? (
-          <p className="text-slate-400">Loading history...</p>
+          <p className="text-gray-500 text-center py-10">Loading history...</p>
         ) : transactions.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-slate-400">No transactions found.</p>
-            <p className="text-xs text-slate-500 mt-2">Looking for email: {user.email}</p>
-          </div>
+          <p className="text-gray-500 text-center py-10">No transactions found.</p>
         ) : (
-          <div className="flex flex-col gap-4">
-            {transactions.map((tx) => {
-              const isSender = tx.senderEmail === user.email;
-              return (
-                <div key={tx._id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800 transition-colors border border-slate-800/50">
-                  <div className="flex items-center gap-4 mb-4 md:mb-0">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isSender ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                      {isSender ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}
+          transactions.map((tx) => {
+            const isSender = tx.senderEmail === user.email;
+            const isDeposit = tx.type === 'deposit';
+            
+            // Determine status fallback for old transactions
+            const status = tx.status || 'Completed';
+            const isPending = status === 'Pending';
+
+            const { date, time } = formatDate(tx.createdAt);
+
+            // Clean up the display name
+            let displayName = isSender ? tx.receiverEmail : tx.senderEmail;
+            if (isDeposit) displayName = 'Self';
+            
+            // Clean up the transaction title
+            let title = 'Domestic Transfer';
+            if (isDeposit) title = 'Deposit';
+            if (tx.type === 'wire_transfer') title = 'Wire Transfer';
+            if (tx.type.includes('withdrawal')) title = `${tx.type.split('_')[0].toUpperCase()} Transfer`;
+
+            return (
+              <div key={tx._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                
+                {/* Top Row: Title and Amount */}
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-extrabold text-gray-900 text-[15px] flex items-center gap-2">
+                    {title} <span className="text-gray-300">→</span>
+                  </h3>
+                  <p className={`font-extrabold text-[15px] ${isSender && !isDeposit ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {isSender && !isDeposit ? '-' : '+'} £{tx.amount.toFixed(2)}
+                  </p>
+                </div>
+
+                {/* Middle Row: Icon, Name, Status Badge, Subtext */}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-3">
+                    {/* Icon */}
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+                      isDeposit ? 'bg-[#e6f4ea] text-[#0f5e40]' : (isSender ? 'bg-[#fdf2f2] text-rose-500' : 'bg-[#e6f4ea] text-emerald-600')
+                    }`}>
+                      {isDeposit ? <ArrowDownLeft className="w-5 h-5" /> : (isSender ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />)}
                     </div>
+                    
+                    {/* Name & Badge */}
                     <div>
-                      <p className="font-bold text-lg">
-                        {isSender ? `Sent to ${tx.receiverEmail}` : `Received from ${tx.senderEmail}`}
-                      </p>
-                      <p className="text-sm text-slate-400">
-                        {new Date(tx.createdAt).toLocaleString()} • {tx.type === 'crypto_buy' ? 'Crypto Purchase' : 'Bank Transfer'}
-                      </p>
+                      <p className="font-medium text-gray-700 text-sm mb-1">{displayName}</p>
+                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase ${
+                        isPending ? 'bg-[#fffbf0] text-[#d97706]' : 'bg-[#e6f4ea] text-[#0f5e40]'
+                      }`}>
+                        {isPending ? <Timer className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                        {isPending ? 'PENDING' : 'PROCESSED'}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-left md:text-right">
-                    <p className={`font-bold text-xl ${isSender ? 'text-white' : 'text-emerald-400'}`}>
-                      {isSender ? '-' : '+'}${tx.amount.toFixed(2)}
+
+                  {/* Subtext (Completed/Processing) */}
+                  <div className="text-right">
+                    <p className={`text-xs font-semibold ${isPending ? 'text-[#d97706]' : 'text-gray-400'}`}>
+                      {isPending ? 'Processing' : 'Completed'}
                     </p>
-                    <p className="text-sm text-slate-400">Completed</p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Bottom Row: Date & Time */}
+                <div className="flex items-center gap-4 text-[11px] font-medium text-gray-400 border-t border-gray-50 pt-3">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" /> {date}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" /> {time}
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
+
+      {/* Bottom Button */}
+      {transactions.length > 0 && (
+        <div className="flex justify-center mt-8">
+          <button className="bg-white border border-gray-200 text-gray-700 font-bold text-sm px-6 py-3 rounded-xl shadow-sm hover:bg-gray-50 flex items-center gap-2">
+            View Complete History <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,16 @@ const TransactionSchema = new mongoose.Schema({
   type: {
     type: String,
     default: 'transfer'
+  },
+  description: {
+    type: String,
+    default: 'Transfer'
+  },
+  // NEW: Status field for Pending vs Completed
+  status: {
+    type: String,
+    enum: ['Pending', 'Completed', 'Failed'],
+    default: 'Completed'
   }
 }, { timestamps: true });
 

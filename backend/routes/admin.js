@@ -87,4 +87,35 @@ router.put('/ban-user/:id', async (req, res) => {
   }
 });
 
+const Transaction = require('../models/Transaction'); // Make sure this is at the top!
+
+// @route   GET /api/admin/pending-transactions
+// @desc    Get all pending transactions
+router.get('/pending-transactions', async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ status: 'Pending' }).sort({ createdAt: -1 });
+    res.json(transactions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route   PUT /api/admin/approve-transaction/:id
+// @desc    Approve a pending transaction
+router.put('/approve-transaction/:id', async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+    if (!transaction) return res.status(404).json({ message: "Transaction not found" });
+
+    transaction.status = 'Completed';
+    await transaction.save();
+
+    res.json({ message: "Transaction approved and completed!", transaction });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;

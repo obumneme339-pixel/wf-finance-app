@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const bcrypt = require('bcryptjs');
 
-// Transfer Route (Email to Email)
+// 1. Standard Email Transfer (Instant)
 router.post('/transfer', async (req, res) => {
   try {
     const { senderEmail, receiverEmail, amount } = req.body;
@@ -21,23 +21,30 @@ router.post('/transfer', async (req, res) => {
     await sender.save();
     await receiver.save();
 
-    const newTransaction = new Transaction({ senderEmail, receiverEmail, amount, type: 'transfer' });
+    const newTransaction = new Transaction({ 
+      senderEmail, 
+      receiverEmail, 
+      amount, 
+      type: 'transfer',
+      description: 'Domestic Transfer',
+      status: 'Completed' 
+    });
     await newTransaction.save();
 
     const io = req.app.get('socketio');
     if (io) {
-      io.to(receiverEmail).emit("balance_updated", { message: `You received $${amount} from ${sender.firstName}`, newBalance: receiver.balance });
-      io.to(senderEmail).emit("balance_updated", { message: `You sent $${amount} to ${receiver.firstName}`, newBalance: sender.balance });
+      io.to(receiverEmail).emit("balance_updated", { message: `You received £${amount} from ${sender.firstName}`, newBalance: receiver.balance });
+      io.to(senderEmail).emit("balance_updated", { message: `You sent £${amount} to ${receiver.firstName}`, newBalance: sender.balance });
     }
 
-    res.json({ message: `Successfully sent $${amount} to ${receiver.firstName}!` });
+    res.json({ message: `Successfully sent £${amount} to ${receiver.firstName}!` });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
 });
 
-// History Route
+// 2. Fetch History
 router.get('/history/:email', async (req, res) => {
   try {
     const userEmail = req.params.email;
@@ -51,7 +58,7 @@ router.get('/history/:email', async (req, res) => {
   }
 });
 
-// Deposit Route
+// 3. Deposit (Instant)
 router.post('/deposit', async (req, res) => {
   try {
     const { email, amount } = req.body;
@@ -65,23 +72,25 @@ router.post('/deposit', async (req, res) => {
       senderEmail: 'Bank Deposit',
       receiverEmail: email,
       amount: amount,
-      type: 'deposit'
+      type: 'deposit',
+      description: 'Account Funding',
+      status: 'Completed'
     });
     await newTransaction.save();
 
     const io = req.app.get('socketio');
     if (io) {
-      io.to(email).emit("balance_updated", { message: `Deposit of $${amount} successful!`, newBalance: user.balance });
+      io.to(email).emit("balance_updated", { message: `Deposit of £${amount} successful!`, newBalance: user.balance });
     }
 
-    res.json({ message: `Successfully deposited $${amount}!`, user });
+    res.json({ message: `Successfully deposited £${amount}!`, user });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
 });
 
-// Wire Transfer Route
+// 4. Wire Transfer (Requires Admin Approval - PENDING)
 router.post('/wire-transfer', async (req, res) => {
   try {
     const { email, amount, pin, beneficiaryName, accountNumber, bankName } = req.body;
@@ -92,25 +101,29 @@ router.post('/wire-transfer', async (req, res) => {
     if (!isPinMatch) return res.status(400).json({ message: "Invalid Transaction PIN" });
     if (user.balance < amount) return res.status(400).json({ message: "Insufficient funds" });
 
+    // Note: We deduct the balance immediately in this demo, but in a real app, 
+    // the balance might only deduct AFTER admin approval.
     user.balance -= amount;
     await user.save();
 
     const newTransaction = new Transaction({
       senderEmail: email,
-      receiverEmail: `${beneficiaryName} (${bankName} - ${accountNumber})`,
+      receiverEmail: `${beneficiaryName} (${bankName})`,
       amount: amount,
-      type: 'wire_transfer'
+      type: 'wire_transfer',
+      description: 'Wire Transfer',
+      status: 'Pending' // <--- Set to Pending
     });
     await newTransaction.save();
 
-    res.json({ message: "Wire transfer successful!", user });
+    res.json({ message: "Wire transfer submitted for approval!", user });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
   }
 });
 
-// External Transfer Route (PayPal, Skrill)
+// 5. External Transfer (PayPal, Skrill - PENDING)
 router.post('/external-transfer', async (req, res) => {
   try {
     const { email, amount, platform, recipientAccount } = req.body;
@@ -127,7 +140,9 @@ router.post('/external-transfer', async (req, res) => {
       senderEmail: email,
       receiverEmail: recipientAccount, 
       amount: transferAmount,
-      type: `${platform.toLowerCase()}_withdrawal` 
+      type: `${platform.toLowerCase()}_withdrawal`,
+      description: `${platform} Withdrawal`,
+      status: 'Pending' // <--- Set to Pending
     });
     await newTransaction.save();
 
@@ -138,7 +153,7 @@ router.post('/external-transfer', async (req, res) => {
   }
 });
 
-// Crypto Transfer Route
+// 6. Crypto Transfer (PENDING)
 router.post('/crypto-transfer', async (req, res) => {
   try {
     const { email, cryptoType, amount, walletAddress, pin } = req.body;
@@ -160,7 +175,9 @@ router.post('/crypto-transfer', async (req, res) => {
       senderEmail: email,
       receiverEmail: walletAddress,
       amount: transferAmount,
-      type: `${cryptoType}_transfer`
+      type: `${cryptoType}_transfer`,
+      description: `${cryptoType.toUpperCase()} Withdrawal`,
+      status: 'Pending' // <--- Set to Pending
     });
     await newTransaction.save();
 
@@ -171,7 +188,7 @@ router.post('/crypto-transfer', async (req, res) => {
   }
 });
 
-// Verify Internal Account Number
+// 7. Verify Internal Account Number
 router.post('/verify-account', async (req, res) => {
   try {
     const { accountNumber } = req.body;
@@ -183,7 +200,7 @@ router.post('/verify-account', async (req, res) => {
   }
 });
 
-// Internal Transfer Route
+// 8. Internal Transfer (Instant)
 router.post('/internal-transfer', async (req, res) => {
   try {
     const { email, recipientAccountNumber, amount, pin, description } = req.body;
@@ -209,7 +226,8 @@ router.post('/internal-transfer', async (req, res) => {
       receiverEmail: receiver.email,
       amount: amount,
       type: 'internal_transfer',
-      description: description || 'Internal Transfer'
+      description: description || 'Internal Transfer',
+      status: 'Completed' // <--- Set to Completed
     });
     await newTransaction.save();
 
