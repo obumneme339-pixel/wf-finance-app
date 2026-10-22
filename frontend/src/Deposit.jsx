@@ -1,75 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, CreditCard, ShieldCheck, CheckCircle2, Lock, Copy, Wallet } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Wallet, ShieldCheck, CheckCircle2, Info, ArrowRight, HelpCircle, Banknote } from 'lucide-react';
+
+const PAYMENT_METHODS = [
+  { id: 'usdt', name: 'USDT', subtitle: 'Secure and fast processing' },
+  { id: 'ltc', name: 'Litecoin', subtitle: 'Secure and fast processing' },
+  { id: 'eth', name: 'Ethereum', subtitle: 'Secure and fast processing' },
+  { id: 'btc', name: 'Bitcoin', subtitle: 'Secure and fast processing' },
+];
 
 function Deposit({ user, setUser, setCurrentView }) {
+  const [selectedMethod, setSelectedMethod] = useState('usdt');
   const [amount, setAmount] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-  
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
-  
-  // NEW STATE FOR WEB3 CRYPTO ADDRESS
-  const [cryptoAddress, setCryptoAddress] = useState('');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  // FETCH CRYPTO ADDRESS ON LOAD
-  useEffect(() => {
-    const fetchAddress = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/wallet/address/${user.email}`);
-        const data = await response.json();
-        setCryptoAddress(data.address);
-      } catch (err) {
-        console.error("Failed to fetch address", err);
-      }
-    };
-    fetchAddress();
-  }, [user.email, API_URL]);
-
-  // Format card number with spaces (e.g., 1234 5678 9012 3456)
-  const handleCardNumberChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ''); 
-    if (value.length > 16) value = value.slice(0, 16); 
-    const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-    setCardNumber(formatted);
-  };
-
-  // Format expiry (MM/YY)
-  const handleExpiryChange = (e) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 4) value = value.slice(0, 4);
-    if (value.length > 2) {
-      value = `${value.slice(0, 2)}/${value.slice(2)}`;
-    }
-    setExpiry(value);
-  };
 
   const handleDeposit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     const depositAmount = Number(amount);
-    if (depositAmount < 100) {
-      setError("Minimum deposit amount is $100.");
-      return;
-    }
-    if (cardNumber.replace(/\s/g, '').length !== 16) {
-      setError("Please enter a valid 16-digit card number.");
-      return;
-    }
-    if (cvv.length < 3) {
-      setError("Please enter a valid CVV.");
-      return;
+    if (depositAmount < 10) {
+      return setError("Minimum deposit is $10.00");
     }
 
     setIsProcessing(true);
 
-    // Simulate a 3-second processing delay
+    // Simulate processing delay
     setTimeout(async () => {
       try {
         const response = await fetch(`${API_URL}/api/transaction/deposit`, {
@@ -91,27 +50,23 @@ function Deposit({ user, setUser, setCurrentView }) {
         setError(err.message);
         setIsProcessing(false);
       }
-    }, 3000);
+    }, 2000);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(cryptoAddress);
-    alert("Crypto Address Copied!");
-  };
-
+  // Success Screen
   if (isSuccess) {
     return (
-      <div className="p-8 text-white max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
-        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
-          <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+      <div className="p-8 max-w-lg mx-auto min-h-screen flex flex-col items-center justify-center text-center bg-white">
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-10 h-10 text-[#0f5e40]" />
         </div>
-        <h2 className="text-3xl font-bold mb-2">Deposit Successful</h2>
-        <p className="text-slate-400 text-center mb-8">
-          Your wallet has been funded with <span className="text-white font-bold">${Number(amount).toFixed(2)}</span>.
+        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Deposit Successful</h2>
+        <p className="text-gray-500 mb-8">
+          Your account has been funded with <span className="font-bold text-gray-900">${Number(amount).toFixed(2)}</span>.
         </p>
         <button 
-          onClick={() => setCurrentView('dashboard')}
-          className="w-full bg-[#d4f762] hover:bg-[#c2e654] text-slate-900 font-bold py-4 rounded-xl transition-colors"
+          onClick={() => setCurrentView('dashboard')} 
+          className="w-full bg-[#0f5e40] text-white font-extrabold py-4 rounded-xl shadow-md hover:bg-[#0a3a27] transition-colors"
         >
           Back to Dashboard
         </button>
@@ -120,156 +75,121 @@ function Deposit({ user, setUser, setCurrentView }) {
   }
 
   return (
-    <div className="p-4 md:p-8 text-white max-w-md mx-auto pb-20">
-      <button 
-        onClick={() => setCurrentView('dashboard')}
-        className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-5 h-5" /> Back
-      </button>
-
-      <h2 className="text-3xl font-bold mb-2">Fund Wallet</h2>
-      <p className="text-slate-400 mb-8">Add money securely to your account.</p>
-
-      {error && (
-        <div className="bg-red-500/20 border border-red-500 text-red-400 p-3 rounded-lg mb-6 text-sm text-center">
-          {error}
-        </div>
-      )}
-
-      {/* --- NEW: WEB3 CRYPTO DEPOSIT SECTION --- */}
-      <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl mb-8">
-        <h3 className="text-sm font-medium flex items-center gap-2 text-white mb-2">
-          <Wallet className="w-4 h-4 text-emerald-400" /> Deposit via Crypto (USDT)
-        </h3>
-        <p className="text-xs text-slate-400 mb-4">
-          Send USDT (ERC-20) from your Crypto.com wallet to this address. Your balance will update automatically once confirmed on the blockchain.
-        </p>
-        
-        <div className="bg-slate-800 p-3 rounded-lg border border-slate-700 flex items-center justify-between gap-2">
-          <span className="font-mono text-xs text-emerald-400 break-all select-all">
-            {cryptoAddress || "Generating address..."}
-          </span>
-          <button 
-            onClick={copyToClipboard}
-            className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors flex-shrink-0"
-            title="Copy Address"
-          >
-            <Copy className="w-4 h-4 text-white" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 mb-8">
-        <div className="h-px bg-slate-800 flex-1"></div>
-        <span className="text-xs text-slate-500 uppercase tracking-widest font-medium">Or Pay with Card</span>
-        <div className="h-px bg-slate-800 flex-1"></div>
-      </div>
-
-      {/* --- CARD DEPOSIT SECTION --- */}
-      <form onSubmit={handleDeposit} className="space-y-6">
-        
-        {/* Amount Section */}
+    <div className="min-h-screen bg-[#f8fafc] pb-10">
+      
+      {/* Header */}
+      <div className="flex items-center gap-4 p-4 bg-white border-b border-gray-100 sticky top-0 z-10">
+        <button onClick={() => setCurrentView('dashboard')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors">
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
+        </button>
         <div>
-          <label className="block text-sm text-slate-400 mb-2">Amount to Deposit ($)</label>
+          <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">Make a Deposit</h1>
+          <p className="text-xs text-gray-500 font-medium">Fund your account with your preferred payment method</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleDeposit} className="p-4 max-w-lg mx-auto space-y-6 mt-2">
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm border border-red-100 text-center">{error}</div>}
+
+        {/* Payment Method Selection */}
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-gray-400" /> Select Payment Method
+          </h3>
+          
+          <div className="space-y-3">
+            {PAYMENT_METHODS.map((method) => (
+              <label 
+                key={method.id} 
+                onClick={() => setSelectedMethod(method.id)}
+                className={`flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                  selectedMethod === method.id 
+                    ? 'border-[#0f5e40] bg-[#f0fdf4]' 
+                    : 'border-gray-100 bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedMethod === method.id ? 'bg-[#d1fae5] text-[#0f5e40]' : 'bg-gray-200 text-gray-500'}`}>
+                    <Banknote className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-gray-900">{method.name}</p>
+                    <p className="text-xs font-medium text-gray-500">{method.subtitle}</p>
+                  </div>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === method.id ? 'border-[#0f5e40]' : 'border-gray-300'}`}>
+                  {selectedMethod === method.id && <div className="w-2.5 h-2.5 bg-[#0f5e40] rounded-full"></div>}
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Deposit Amount */}
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="text-gray-400 text-xl font-bold">$</span> Deposit Amount
+          </h3>
           <div className="relative">
-            <span className="absolute left-4 top-3 text-slate-400 font-bold text-xl">$</span>
+            <span className="absolute left-4 top-3.5 text-gray-400 font-bold text-xl">$</span>
             <input 
               type="number" 
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 pl-8 text-2xl font-bold text-white focus:outline-none focus:border-emerald-500"
+              className="w-full bg-white border border-gray-200 rounded-2xl p-4 pl-10 text-2xl font-extrabold text-gray-900 focus:outline-none focus:border-[#0f5e40]"
               placeholder="0.00"
               required
-              min="100"
+              min="10"
             />
+          </div>
+          <p className="text-sm font-medium text-gray-500 mt-3 flex items-center gap-2">
+            <Info className="w-4 h-4" /> Enter the amount you wish to deposit in $
+          </p>
+        </div>
+
+        {/* Security Notice */}
+        <div className="bg-gray-50 p-5 rounded-3xl border border-gray-100 flex items-start gap-3">
+          <ShieldCheck className="w-6 h-6 text-[#0f5e40] flex-shrink-0" />
+          <div>
+            <p className="text-sm font-extrabold text-gray-900 mb-1">Secure Transaction</p>
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">
+              Your payment information is encrypted and secure. We never store sensitive payment details.
+            </p>
           </div>
         </div>
 
-        {/* Payment Details Section */}
-        <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4">
-          <h3 className="text-sm font-medium flex items-center gap-2 border-b border-slate-800 pb-3">
-            <CreditCard className="w-4 h-4 text-blue-400" /> Card Details
-          </h3>
-          
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Cardholder Name</label>
-            <input 
-              type="text"
-              value={cardName}
-              onChange={(e) => setCardName(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 uppercase"
-              placeholder="JOHN DOE"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Card Number</label>
-            <div className="relative">
-              <input 
-                type="text"
-                value={cardNumber}
-                onChange={handleCardNumberChange}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 font-mono tracking-widest"
-                placeholder="0000 0000 0000 0000"
-                required
-              />
-              <CreditCard className="absolute right-3 top-3 w-5 h-5 text-slate-500" />
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Expiry Date</label>
-              <input 
-                type="text"
-                value={expiry}
-                onChange={handleExpiryChange}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 font-mono"
-                placeholder="MM/YY"
-                required
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">CVV</label>
-              <div className="relative">
-                <input 
-                  type="password"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 font-mono"
-                  placeholder="123"
-                  required
-                />
-                <Lock className="absolute right-3 top-3 w-4 h-4 text-slate-500" />
-              </div>
-            </div>
-          </div>
-        </div>
-
+        {/* Submit Button */}
         <button 
           type="submit" 
-          disabled={isProcessing || !amount || !cardNumber || !expiry || !cvv || !cardName}
-          className="w-full bg-[#d4f762] hover:bg-[#c2e654] text-slate-900 font-bold py-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={isProcessing || !amount}
+          className="w-full bg-[#0f5e40] hover:bg-[#0a3a27] text-white font-extrabold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 mt-2"
         >
           {isProcessing ? (
-            <span className="flex items-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Authorizing Payment...
-            </span>
+            'Processing Payment...'
           ) : (
-            `Pay $${amount || '0.00'}`
+            <>Continue to Payment <ArrowRight className="w-5 h-5" /></>
           )}
         </button>
-        
-        <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1">
-          <ShieldCheck className="w-3 h-3 text-emerald-500" /> Card payments are secured with 256-bit encryption.
-        </p>
       </form>
+
+      {/* Need Help Section */}
+      <div className="px-4 max-w-lg mx-auto mt-6">
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex items-start gap-4">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <HelpCircle className="w-6 h-6 text-gray-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-extrabold text-gray-900 mb-1">Need Help?</h3>
+            <p className="text-sm text-gray-500 mb-3 leading-relaxed">
+              If you encounter any issues during the deposit process, our support team is available 24/7 to assist you.
+            </p>
+            <button onClick={() => setCurrentView('support')} className="text-sm font-extrabold text-[#0f5e40] hover:underline flex items-center gap-1">
+              Contact Support <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
