@@ -30,7 +30,6 @@ function Header({ title, userName, toggleMobileMenu, user }) {
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 text-gray-900 shrink-0 relative z-50">
       
-      {/* Left Side: Hamburger Menu (Mobile) / Page Title (Desktop) */}
       <div className="flex-1 flex items-center justify-start">
         <button 
           onClick={toggleMobileMenu} 
@@ -39,27 +38,22 @@ function Header({ title, userName, toggleMobileMenu, user }) {
           <Menu className="w-6 h-6 text-gray-700" />
         </button>
         
-        {/* Desktop Title */}
         <h1 className="text-xl font-bold text-gray-900 hidden md:block">{title}</h1>
       </div>
 
-      {/* Center: The Brand Logo */}
+      {/* Center Logo - Now visible on mobile */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          {/* Green Shield Logo SVG */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div className="flex items-center gap-1.5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#0f5e40"/>
             <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#0f5e40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span className="font-bold text-lg tracking-[0.15em] text-[#0f5e40] uppercase hidden sm:block">Credence</span>
+          <span className="font-extrabold text-sm tracking-widest text-[#0f5e40] uppercase mt-1">Credence</span>
         </div>
       </div>
       
-      {/* Right Side: Notifications & Avatar */}
-      <div className="flex-1 flex items-center justify-end gap-3 md:gap-5">
-        
-        {/* Notification Bell */}
+      <div className="flex-1 flex items-center justify-end gap-3">
         <div className="relative">
           <button 
             onClick={handleBellClick} 
@@ -71,12 +65,10 @@ function Header({ title, userName, toggleMobileMenu, user }) {
             )}
           </button>
 
-          {/* Notification Dropdown */}
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-72 md:w-80 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
               <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <span className="font-semibold text-sm text-gray-800">Notifications</span>
-                <span className="text-xs text-gray-500">{notifications.length} recent</span>
+                <span className="font-bold text-sm text-gray-800">Notifications</span>
               </div>
               
               <div className="max-h-64 overflow-y-auto">
@@ -107,13 +99,9 @@ function Header({ title, userName, toggleMobileMenu, user }) {
           )}
         </div>
         
-        {/* User Avatar */}
-        <div className="flex items-center justify-center">
-          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 cursor-pointer hover:bg-gray-200 transition-colors">
-             <span className="font-bold text-sm text-[#0f5e40]">{userName.charAt(0)}</span>
-          </div>
+        <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center cursor-pointer shadow-sm">
+           <span className="font-bold text-sm text-white">{userName.charAt(0)}</span>
         </div>
-
       </div>
     </header>
   );
