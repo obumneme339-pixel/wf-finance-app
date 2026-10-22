@@ -10,11 +10,22 @@ import Deposit from './Deposit';
 import InternationalTransfer from './InternationalTransfer'; 
 import PayPalTransfer from './PayPalTransfer'; 
 import SkrillTransfer from './SkrillTransfer'; 
-import CryptoTransfer from './CryptoTransfer'; // NEW IMPORT
+import CryptoTransfer from './CryptoTransfer'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
 import BottomNav from './BottomNav'; 
+
+// A simple placeholder component for pages we haven't built yet
+const PlaceholderPage = ({ title }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center p-8 bg-[#f8fafc]">
+    <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+      <span className="text-3xl">🚧</span>
+    </div>
+    <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{title}</h2>
+    <p className="text-gray-500 max-w-sm">This feature is currently under development. Check back soon!</p>
+  </div>
+);
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -33,7 +44,7 @@ function App() {
   };
 
   const getPageTitle = () => {
-    if (currentView === 'transfer') return 'Transfer Money';
+    if (currentView === 'transfer') return 'Local Transfer';
     if (currentView === 'admin') return 'Admin Panel';
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
@@ -45,6 +56,12 @@ function App() {
     if (currentView === 'btc-transfer') return 'Send Bitcoin';
     if (currentView === 'eth-transfer') return 'Send Ethereum';
     if (currentView === 'usdt-transfer') return 'Send Tether';
+    if (currentView === 'statement') return 'Account Statement';
+    if (currentView === 'investments') return 'Investments';
+    if (currentView === 'grants') return 'Grant Applications';
+    if (currentView === 'crypto-swap') return 'Crypto Swap';
+    if (currentView === 'support') return 'Customer Support';
+    if (currentView === 'cards') return 'Virtual Cards';
     return 'Dashboard';
   };
 
@@ -93,6 +110,21 @@ function App() {
               <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="eth" />
             ) : currentView === 'usdt-transfer' ? (
               <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="usdt" />
+            
+            /* NEW PLACEHOLDER ROUTES */
+            ) : currentView === 'statement' ? (
+              <PlaceholderPage title="Account Statement" />
+            ) : currentView === 'investments' ? (
+              <PlaceholderPage title="Investments" />
+            ) : currentView === 'grants' ? (
+              <PlaceholderPage title="Grant Applications" />
+            ) : currentView === 'crypto-swap' ? (
+              <PlaceholderPage title="Crypto Swap" />
+            ) : currentView === 'support' ? (
+              <PlaceholderPage title="Customer Support" />
+            ) : currentView === 'cards' ? (
+              <PlaceholderPage title="Virtual Cards" />
+            
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}
