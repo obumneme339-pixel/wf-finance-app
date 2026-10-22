@@ -11,12 +11,12 @@ import InternationalTransfer from './InternationalTransfer';
 import PayPalTransfer from './PayPalTransfer'; 
 import SkrillTransfer from './SkrillTransfer'; 
 import CryptoTransfer from './CryptoTransfer'; 
+import InternalTransfer from './InternalTransfer'; // NEW
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
 import BottomNav from './BottomNav'; 
 
-// A simple placeholder component for pages we haven't built yet
 const PlaceholderPage = ({ title }) => (
   <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center p-8 bg-[#f8fafc]">
     <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4">
@@ -56,6 +56,7 @@ function App() {
     if (currentView === 'btc-transfer') return 'Send Bitcoin';
     if (currentView === 'eth-transfer') return 'Send Ethereum';
     if (currentView === 'usdt-transfer') return 'Send Tether';
+    if (currentView === 'internal-transfer') return 'Internal Transfer'; // NEW
     if (currentView === 'statement') return 'Account Statement';
     if (currentView === 'investments') return 'Investments';
     if (currentView === 'grants') return 'Grant Applications';
@@ -110,8 +111,10 @@ function App() {
               <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="eth" />
             ) : currentView === 'usdt-transfer' ? (
               <CryptoTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} cryptoType="usdt" />
+            ) : currentView === 'internal-transfer' ? (
+              <InternalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             
-            /* NEW PLACEHOLDER ROUTES */
+            /* PLACEHOLDERS */
             ) : currentView === 'statement' ? (
               <PlaceholderPage title="Account Statement" />
             ) : currentView === 'investments' ? (

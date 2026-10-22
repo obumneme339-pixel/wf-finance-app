@@ -30,7 +30,6 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
 
   return (
     <>
-      {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm" 
@@ -38,13 +37,11 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
         />
       )}
 
-      {/* Sidebar Container */}
       <div className={`
         fixed md:relative z-50 w-[85vw] max-w-[320px] bg-white h-screen flex flex-col border-r border-gray-200 shrink-0 transition-transform duration-300 ease-in-out overflow-y-auto
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         
-        {/* Header (Only visible on mobile to close menu) */}
         <div className="flex items-center justify-between p-4 md:hidden border-b border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#0f5e40] rounded-lg flex items-center justify-center text-white text-sm">🏦</div>
@@ -55,7 +52,6 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
           </button>
         </div>
 
-        {/* User Profile Section */}
         <div className="p-5 border-b border-gray-100">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -71,7 +67,7 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
 
           <div className="flex items-center gap-2 mb-2">
             <span className="bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-bold font-mono tracking-wider">
-              # {user?.id ? user.id.slice(-10).toUpperCase() : '95942587664'}
+              # {user?.accountNumber || '95942587664'}
             </span>
           </div>
           <p className="text-xs text-gray-500 mb-5">Savings Account</p>
@@ -91,7 +87,6 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
           </div>
         </div>
 
-        {/* Menu Links */}
         <div className="flex-1 p-4">
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 px-2">Menu</p>
           
@@ -116,7 +111,7 @@ function Sidebar({ setUser, setCurrentView, currentView, user, isMobileMenuOpen,
               International Transfer
             </button>
 
-            <button onClick={() => handleNavClick('transfer')} className={getLinkClass('internal-transfer')}>
+            <button onClick={() => handleNavClick('internal-transfer')} className={getLinkClass('internal-transfer')}>
               <div className={getIconClass('internal-transfer')}><ArrowRightLeft className="w-5 h-5" /></div>
               Internal Transfer
             </button>

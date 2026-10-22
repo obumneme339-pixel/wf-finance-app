@@ -4,31 +4,39 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 // @route   POST /api/auth/register
-// @desc    Register a new user
+// @desc    Register a new user with full KYC details
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { 
+      firstName, middleName, lastName, username, email, 
+      phone, country, accountType, currency, transactionPin, password 
+    } = req.body;
 
-    // 1. Check if user already exists
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: "User already exists" });
+    if (user) return res.status(400).json({ message: "Email already exists" });
+    
+    let userByUsername = await User.findOne({ username });
+    if (userByUsername) return res.status(400).json({ message: "Username is taken" });
 
-    // 2. Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPin = await bcrypt.hash(transactionPin, salt);
 
-    // 3. Create the new user
+    // Generate a random 10-digit account number
+    const generatedAccountNumber = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
     user = new User({
-      name,
-      email,
-      password: hashedPassword,
-      balance: 0
+      firstName, middleName, lastName, username, email, 
+      phone, country, accountType, currency, 
+      password: hashedPassword, 
+      transactionPin: hashedPin, 
+      balance: 0,
+      accountNumber: generatedAccountNumber // Added here
     });
 
-    // 4. Save to database
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully! 🎉" });
+    res.status(201).json({ message: "Account created successfully! 🎉" });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -41,29 +49,26 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Check if user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ 
+      $or: [{ email: email }, { username: email }] 
+    });
+
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (user.isBanned) return res.status(403).json({ message: "Account suspended. Contact support." });
 
-// 2. Check if the user is banned!
-if (user.isBanned) {
-  return res.status(403).json({ message: "Your account has been suspended. Please contact support." });
-}
-
-    // 2. Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // 3. If successful, send user data including isAdmin and crypto
     res.json({ 
       message: "Login successful! Welcome back. 🏦", 
       user: { 
         id: user._id, 
-        name: user.name, 
+        name: `${user.firstName} ${user.lastName}`,
         email: user.email, 
         balance: user.balance, 
+        accountNumber: user.accountNumber, // Send account number to frontend
         crypto: user.crypto || { btc: 0, eth: 0, usdt: 0, usdc: 0 }, 
-        isAdmin: user.isAdmin || false // Safety fallback if it's missing
+        isAdmin: user.isAdmin 
       } 
     });
 
