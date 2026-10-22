@@ -68,7 +68,6 @@ function PayPalTransfer({ user, setUser, setCurrentView }) {
 
       <form onSubmit={handleTransfer} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-6">
         
-        {/* PayPal Recipient */}
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
           <label className="block text-sm font-bold text-gray-700 mb-2">PayPal Recipient</label>
           <div className="relative">
@@ -82,10 +81,8 @@ function PayPalTransfer({ user, setUser, setCurrentView }) {
               required
             />
           </div>
-          <p className="text-xs text-gray-500 mt-2">Enter the recipient's PayPal email address</p>
         </div>
 
-        {/* Amount */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2">Transfer Amount</label>
           <div className="relative">
@@ -106,7 +103,7 @@ function PayPalTransfer({ user, setUser, setCurrentView }) {
 
         <div className="bg-blue-50 text-blue-700 p-4 rounded-xl text-xs flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-          <p>Funds will be sent directly to the recipient's PayPal account. Processing typically takes a few minutes.</p>
+          <p>Funds will be sent directly to the recipient's PayPal account.</p>
         </div>
 
         <button 
