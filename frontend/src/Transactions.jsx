@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer } from 'lucide-react';
+import { Filter, ArrowUpRight, ArrowDownLeft, Calendar, Clock, CheckCircle2, Timer, ArrowRight } from 'lucide-react';
 
 function Transactions({ user }) {
   const [transactions, setTransactions] = useState([]);
@@ -24,11 +24,15 @@ function Transactions({ user }) {
 
   // Helper to format date exactly like the screenshot
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return {
-      date: date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
-    };
+    try {
+      const date = new Date(dateString);
+      return {
+        date: date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      };
+    } catch (e) {
+      return { date: 'N/A', time: 'N/A' };
+    }
   };
 
   return (
@@ -53,24 +57,28 @@ function Transactions({ user }) {
           <p className="text-gray-500 text-center py-10">No transactions found.</p>
         ) : (
           transactions.map((tx) => {
-            const isSender = tx.senderEmail === user.email;
-            const isDeposit = tx.type === 'deposit';
-            
-            // Determine status fallback for old transactions
+            // Defensive checks against missing data
+            const sender = tx.senderEmail || 'Unknown';
+            const receiver = tx.receiverEmail || 'Unknown';
+            const amount = Number(tx.amount) || 0;
+            const type = tx.type || 'transfer';
             const status = tx.status || 'Completed';
+
+            const isSender = sender === user.email;
+            const isDeposit = type === 'deposit';
             const isPending = status === 'Pending';
 
             const { date, time } = formatDate(tx.createdAt);
 
             // Clean up the display name
-            let displayName = isSender ? tx.receiverEmail : tx.senderEmail;
+            let displayName = isSender ? receiver : sender;
             if (isDeposit) displayName = 'Self';
             
             // Clean up the transaction title
             let title = 'Domestic Transfer';
             if (isDeposit) title = 'Deposit';
-            if (tx.type === 'wire_transfer') title = 'Wire Transfer';
-            if (tx.type.includes('withdrawal')) title = `${tx.type.split('_')[0].toUpperCase()} Transfer`;
+            if (type === 'wire_transfer') title = 'Wire Transfer';
+            if (type.includes('withdrawal')) title = `${type.split('_')[0].toUpperCase()} Transfer`;
 
             return (
               <div key={tx._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -81,7 +89,7 @@ function Transactions({ user }) {
                     {title} <span className="text-gray-300">→</span>
                   </h3>
                   <p className={`font-extrabold text-[15px] ${isSender && !isDeposit ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    {isSender && !isDeposit ? '-' : '+'} £{tx.amount.toFixed(2)}
+                    {isSender && !isDeposit ? '-' : '+'} £{amount.toFixed(2)}
                   </p>
                 </div>
 
