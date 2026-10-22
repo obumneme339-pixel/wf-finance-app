@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, UserCircle, Menu, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Bell, Menu, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 function Header({ title, userName, toggleMobileMenu, user }) {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -10,15 +10,11 @@ function Header({ title, userName, toggleMobileMenu, user }) {
 
   useEffect(() => {
     if (!user) return;
-
     const fetchNotifications = async () => {
       try {
         const response = await fetch(`${API_URL}/api/transaction/history/${user.email}`);
         const data = await response.json();
-        if (Array.isArray(data)) {
-          // Get the 3 most recent transactions for the notification dropdown
-          setNotifications(data.slice(0, 3));
-        }
+        if (Array.isArray(data)) setNotifications(data.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch notifications", err);
       }
@@ -28,68 +24,78 @@ function Header({ title, userName, toggleMobileMenu, user }) {
 
   const handleBellClick = () => {
     setShowNotifications(!showNotifications);
-    if (!showNotifications) {
-      setUnread(false); // Remove the red dot when opened
-    }
+    if (!showNotifications) setUnread(false); 
   };
 
   return (
-    <header className="h-16 md:h-20 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 text-white shrink-0 relative z-50">
-      <div className="flex items-center gap-3">
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 text-gray-900 shrink-0 relative z-50">
+      
+      {/* Left Side: Hamburger Menu (Mobile) / Page Title (Desktop) */}
+      <div className="flex-1 flex items-center justify-start">
         <button 
-          onClick={toggleMobileMenu}
-          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-slate-800 transition-colors"
+          onClick={toggleMobileMenu} 
+          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <Menu className="w-6 h-6 text-slate-300" />
+          <Menu className="w-6 h-6 text-gray-700" />
         </button>
         
-        <div className="flex items-center gap-2 md:hidden">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm">🏦</div>
-          <span className="font-bold text-lg">WF Finance</span>
-        </div>
+        {/* Desktop Title */}
+        <h1 className="text-xl font-bold text-gray-900 hidden md:block">{title}</h1>
+      </div>
 
-        <h1 className="text-2xl font-bold hidden md:block">{title}</h1>
+      {/* Center: The Brand Logo */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          {/* Green Shield Logo SVG */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#0f5e40"/>
+            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#0f5e40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="font-bold text-lg tracking-[0.15em] text-[#0f5e40] uppercase hidden sm:block">Credence</span>
+        </div>
       </div>
       
-      <div className="flex items-center gap-3 md:gap-6">
+      {/* Right Side: Notifications & Avatar */}
+      <div className="flex-1 flex items-center justify-end gap-3 md:gap-5">
         
-        {/* NOTIFICATION BELL */}
+        {/* Notification Bell */}
         <div className="relative">
           <button 
-            onClick={handleBellClick}
-            className="relative p-2 rounded-full hover:bg-slate-800 transition-colors"
+            onClick={handleBellClick} 
+            className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
           >
-            <Bell className="w-6 h-6 text-slate-300" />
+            <Bell className="w-6 h-6 text-gray-600" />
             {unread && (
-              <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-slate-900 rounded-full"></span>
+              <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
             )}
           </button>
 
-          {/* NOTIFICATION DROPDOWN */}
+          {/* Notification Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-72 md:w-80 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden">
-              <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-                <span className="font-semibold text-sm">Notifications</span>
-                <span className="text-xs text-slate-400">{notifications.length} recent</span>
+            <div className="absolute right-0 mt-2 w-72 md:w-80 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+              <div className="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <span className="font-semibold text-sm text-gray-800">Notifications</span>
+                <span className="text-xs text-gray-500">{notifications.length} recent</span>
               </div>
               
               <div className="max-h-64 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-slate-400">No new notifications</div>
+                  <div className="p-4 text-center text-sm text-gray-500">No new notifications</div>
                 ) : (
                   notifications.map((tx) => {
                     const isSender = tx.senderEmail === user?.email;
                     return (
-                      <div key={tx._id} className="p-3 border-b border-slate-700/50 hover:bg-slate-700/50 transition-colors flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isSender ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                      <div key={tx._id} className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isSender ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
                           {isSender ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-bold text-gray-800">
                             {isSender ? 'Transfer Sent' : 'Funds Received'}
                           </p>
-                          <p className="text-xs text-slate-400">
-                            {isSender ? `To ${tx.receiverEmail}` : `From ${tx.senderEmail}`} • ${tx.amount.toFixed(2)}
+                          <p className="text-xs text-gray-500">
+                            {isSender ? `To ${tx.receiverEmail}` : `From ${tx.senderEmail}`} • £{tx.amount.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -101,11 +107,13 @@ function Header({ title, userName, toggleMobileMenu, user }) {
           )}
         </div>
         
-        <div className="flex items-center gap-2 md:border-l border-slate-700 md:pl-6">
-          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-            <UserCircle className="w-6 h-6 text-blue-400" />
+        {/* User Avatar */}
+        <div className="flex items-center justify-center">
+          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 cursor-pointer hover:bg-gray-200 transition-colors">
+             <span className="font-bold text-sm text-[#0f5e40]">{userName.charAt(0)}</span>
           </div>
         </div>
+
       </div>
     </header>
   );
