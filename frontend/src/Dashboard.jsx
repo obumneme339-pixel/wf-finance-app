@@ -85,14 +85,17 @@ function Dashboard({ user, setUser, setCurrentView }) {
         </div>
       </div>
 
-      {/* SEND MONEY GRID - UPDATED LOGOS & BOLDER TEXT */}
+      {/* SEND MONEY GRID */}
       <div className="mb-8">
         <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mb-3 uppercase">Send Money</h3>
         <div className="grid grid-cols-2 gap-3">
           
           <button onClick={() => setCurrentView('international-transfer')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-11 h-11 bg-[#eff6ff] rounded-xl flex items-center justify-center">
-              <img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" alt="Bank" className="w-6 h-6 object-contain" />
+              {/* Detailed Bank SVG */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11m16-11v11M8 14v3m4-3v3m4-3v3"/>
+              </svg>
             </div>
             <div className="text-left">
               <p className="font-extrabold text-gray-900 text-[15px]">Wire Transfer</p>
@@ -102,7 +105,10 @@ function Dashboard({ user, setUser, setCurrentView }) {
           
           <button onClick={() => setCurrentView('transfer')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
             <div className="w-11 h-11 bg-[#f5f3ff] rounded-xl flex items-center justify-center">
-              <img src="https://cdn-icons-png.flaticon.com/512/927/927667.png" alt="Local" className="w-6 h-6 object-contain" />
+               {/* Detailed Pin SVG */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
+              </svg>
             </div>
             <div className="text-left">
               <p className="font-extrabold text-gray-900 text-[15px]">Local Transfer</p>
@@ -120,10 +126,12 @@ function Dashboard({ user, setUser, setCurrentView }) {
             </div>
           </button>
 
-          {/* Fixed Skrill Logo */}
+          {/* FIXED SKRILL LOGO (CSS Built) */}
           <button className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-start gap-3 hover:shadow-md transition">
-            <div className="w-11 h-11 bg-[#fdf2f8] rounded-xl flex items-center justify-center p-1.5">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Skrill_logo.svg/512px-Skrill_logo.svg.png" alt="Skrill" className="w-full h-full object-contain" />
+            <div className="w-11 h-11 bg-[#fdf2f8] rounded-xl flex items-center justify-center p-1">
+              <div className="w-full h-full bg-[#870048] rounded-lg flex items-center justify-center">
+                <span className="text-white font-extrabold text-[12px] italic tracking-tighter">Skrill</span>
+              </div>
             </div>
             <div className="text-left">
               <p className="font-extrabold text-gray-900 text-[15px]">Skrill</p>

@@ -37,20 +37,17 @@ function Header({ title, userName, toggleMobileMenu, user }) {
         >
           <Menu className="w-6 h-6 text-gray-700" />
         </button>
-        
         <h1 className="text-xl font-bold text-gray-900 hidden md:block">{title}</h1>
       </div>
 
-      {/* Center Logo - Now visible on mobile */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex items-center gap-1.5">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#0f5e40"/>
-            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#0f5e40" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="font-extrabold text-sm tracking-widest text-[#0f5e40] uppercase mt-1">Credence</span>
-        </div>
+      {/* PREMIUM CREDENCE LOGO */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#0f5e40"/>
+          <path d="M12 6C10 6 8 8 8 10C8 13 12 16 12 16C12 16 16 13 16 10C16 8 14 6 12 6Z" fill="#4ade80"/>
+          <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#0f5e40" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <span className="font-extrabold text-[11px] tracking-[0.2em] text-[#0f5e40] uppercase mt-0.5">Credence</span>
       </div>
       
       <div className="flex-1 flex items-center justify-end gap-3">
@@ -99,7 +96,7 @@ function Header({ title, userName, toggleMobileMenu, user }) {
           )}
         </div>
         
-        <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center cursor-pointer shadow-sm">
+        <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center cursor-pointer shadow-sm border border-gray-200">
            <span className="font-bold text-sm text-white">{userName.charAt(0)}</span>
         </div>
       </div>
