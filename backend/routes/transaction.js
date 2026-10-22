@@ -172,4 +172,47 @@ router.post('/local-transfer', async (req, res) => {
   }
 });
 
+// @route   POST /api/transaction/external-transfer
+// @desc    Process an external transfer (PayPal, Skrill, etc.)
+router.post('/external-transfer', async (req, res) => {
+  try {
+    const { email, amount, platform, recipientAccount } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const transferAmount = Number(amount);
+    if (user.balance < transferAmount) {
+      return res.status(400).json({ message: "Insufficient funds" });
+    }
+
+    // Deduct the balance
+    user.balance -= transferAmount;
+    await user.save();
+
+    // Log the transaction
+    const newTransaction = new Transaction({
+      senderEmail: email,
+      receiverEmail: recipientAccount, 
+      amount: transferAmount,
+      type: `${platform.toLowerCase()}_withdrawal` 
+    });
+    await newTransaction.save();
+
+    // Emit real-time update if you have Socket.io set up
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(email).emit("balance_updated", { 
+        message: `Successfully sent £${transferAmount} via ${platform}`, 
+        newBalance: user.balance 
+      });
+    }
+
+    res.json({ message: `Successfully sent £${transferAmount} via ${platform}!`, user });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;

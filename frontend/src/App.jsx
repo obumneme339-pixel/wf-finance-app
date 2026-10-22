@@ -9,6 +9,7 @@ import Settings from './Settings';
 import Deposit from './Deposit'; 
 import InternationalTransfer from './InternationalTransfer'; 
 import PayPalTransfer from './PayPalTransfer'; 
+import SkrillTransfer from './SkrillTransfer'; 
 import Sidebar from './Sidebar';
 import Header from './Header';
 import LandingPage from './LandingPage';
@@ -31,14 +32,15 @@ function App() {
   };
 
   const getPageTitle = () => {
-    if (currentView === 'transfer') return 'Transfer Money';
+    if (currentView === 'transfer') return 'Local Transfer';
     if (currentView === 'admin') return 'Admin Panel';
     if (currentView === 'transactions') return 'Transactions';
     if (currentView === 'profile') return 'Account Info';
     if (currentView === 'settings') return 'Settings'; 
     if (currentView === 'deposit') return 'Fund Wallet';
-    if (currentView === 'international-transfer') return 'International Transfer';
+    if (currentView === 'international-transfer') return 'Wire Transfer';
     if (currentView === 'paypal') return 'PayPal Transfer';
+    if (currentView === 'skrill') return 'Skrill Transfer';
     return 'Dashboard';
   };
 
@@ -79,6 +81,8 @@ function App() {
               <InternationalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : currentView === 'paypal' ? (
               <PayPalTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
+            ) : currentView === 'skrill' ? (
+              <SkrillTransfer user={user} setUser={setUser} setCurrentView={setCurrentView} />
             ) : (
               <Dashboard user={user} setUser={setUser} setCurrentView={setCurrentView} />
             )}

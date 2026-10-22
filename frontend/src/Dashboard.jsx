@@ -13,7 +13,7 @@ const formatCrypto = (n, digits) =>
     minimumFractionDigits: 0, maximumFractionDigits: digits,
   });
 
-/* Inline SVG Logos (Will never break) */
+/* Inline SVG Logos */
 const BitcoinLogo = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#F7931A" /><text x="16" y="23" textAnchor="middle" fontSize="20" fontWeight="800" fill="#fff">₿</text></svg>
 );
@@ -36,7 +36,6 @@ function Dashboard({ user, setCurrentView }) {
   const [transactions, setTransactions] = useState([]);
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  // 1. Fetch Real Transactions
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -123,7 +122,7 @@ function Dashboard({ user, setCurrentView }) {
             <p className="mt-0.5 text-xs font-semibold text-gray-500">Send via PayPal</p>
           </button>
 
-          <button className="group flex flex-col items-start rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-gray-100 transition hover:shadow-md active:scale-[0.98]">
+          <button onClick={() => setCurrentView('skrill')} className="group flex flex-col items-start rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-gray-100 transition hover:shadow-md active:scale-[0.98]">
             <SkrillBadge />
             <p className="mt-3 text-sm font-extrabold text-gray-900">Skrill</p>
             <p className="mt-0.5 text-xs font-semibold text-gray-500">Send via Skrill</p>
@@ -145,7 +144,7 @@ function Dashboard({ user, setCurrentView }) {
         </div>
       </section>
 
-      {/* Recent Transactions (We added this back) */}
+      {/* Recent Transactions */}
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="px-1 text-xs font-extrabold uppercase tracking-widest text-gray-500">Recent Transactions</h2>
